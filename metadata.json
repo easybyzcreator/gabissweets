@@ -1,0 +1,6 @@
+{
+  "name": "Gabi´s sweets",
+  "description": "Simulação e cardápio de bolos e doces artesanais - Gabi´s sweets",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
