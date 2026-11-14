@@ -135,6 +135,23 @@ export default function App() {
           : glassColor;
         document.documentElement.style.setProperty('--glass-color', finalGlassColor);
 
+        // Set +25% more opaque Glass Box Color CSS Variable for client cards/boxes
+        let glassBoxColor = 'rgba(255, 255, 255, 0.65)';
+        if (glassColor.startsWith('#') && glassColor.length === 7) {
+          glassBoxColor = `${glassColor}A6`;
+        } else if (glassColor.startsWith('#') && glassColor.length === 9) {
+          const alpha = Math.min(255, parseInt(glassColor.slice(7, 9), 16) + 64);
+          glassBoxColor = `${glassColor.slice(0, 7)}${alpha.toString(16).padStart(2, '0')}`;
+        } else {
+          const rgbaMatch = glassColor.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)/i);
+          if (rgbaMatch) {
+            const baseAlpha = rgbaMatch[4] !== undefined ? parseFloat(rgbaMatch[4]) : 0.4;
+            const boostedAlpha = Math.min(1, Number((baseAlpha + 0.25).toFixed(2)));
+            glassBoxColor = `rgba(${rgbaMatch[1]}, ${rgbaMatch[2]}, ${rgbaMatch[3]}, ${boostedAlpha})`;
+          }
+        }
+        document.documentElement.style.setProperty('--glass-box-color', glassBoxColor);
+
         // Set Text Color CSS Variable
         if (data.textColor) {
           document.documentElement.style.setProperty('--text-color', data.textColor);
@@ -197,6 +214,7 @@ export default function App() {
               tagTitle={settings?.tagTitle}
               tagLogo={settings?.tagLogo}
               tagUrl={settings?.tagUrl}
+              showTag={false}
             />
           </>
         )}

@@ -2075,7 +2075,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="glass max-w-sm w-full rounded-3xl p-6 sm:p-8 border border-white/20 shadow-2xl flex flex-col items-center text-center space-y-6 sm:space-y-8"
+          className="glass-box max-w-sm w-full rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col items-center text-center space-y-6 sm:space-y-8"
         >
           {/* Logo Frame */}
           <div className="relative mt-2">
@@ -2211,7 +2211,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
         const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
         if (lines.length > 0) {
           return (
-            <div className="flex flex-col items-center mb-12 max-w-sm mx-auto bg-white/40 backdrop-blur-md p-5 rounded-[2rem] border border-white/20 shadow-md">
+            <div className="glass-box flex flex-col items-center mb-12 max-w-sm mx-auto p-5 rounded-[2rem] shadow-md">
               <ul className="text-left space-y-2.5 text-xs text-black/80 font-sans font-semibold">
                 {lines.map((line, idx) => (
                   <li key={idx} className="flex items-start gap-2">
@@ -2274,7 +2274,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           setSelectedSize(null);
                         }
                       }}
-                      className="glass rounded-2xl p-3.5 sm:p-4 md:p-5 flex gap-3.5 sm:gap-4 items-start sm:items-center cursor-pointer hover:shadow-md transition-all duration-300 w-full"
+                      className="glass-box rounded-2xl p-3.5 sm:p-4 md:p-5 flex gap-3.5 sm:gap-4 items-start sm:items-center cursor-pointer hover:shadow-md transition-all duration-300 w-full"
                     >
                       <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl overflow-hidden flex-shrink-0 bg-white/50 shadow-sm border border-black/5 self-start sm:self-center">
                         <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
@@ -2552,7 +2552,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
             );
           })
         ) : (
-          <div className="text-center p-12 opacity-60 glass rounded-2xl">
+          <div className="text-center p-12 opacity-75 glass-box rounded-2xl">
             {settings.language === 'en' ? 'No products found.' : 'Nenhum produto encontrado.'}
           </div>
         )}

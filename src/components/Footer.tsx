@@ -6,13 +6,15 @@ interface FooterProps {
   tagTitle?: string;
   tagLogo?: string;
   tagUrl?: string;
+  showTag?: boolean;
 }
 
 export default function Footer({ 
   primaryColor = '#865d39',
   tagTitle,
   tagLogo,
-  tagUrl
+  tagUrl,
+  showTag = false
 }: FooterProps) {
   const activeColor = primaryColor || '#865d39';
   const fixedTagTitle = tagTitle || 'ALUNO(A)/MENTORADO(A)';
@@ -23,30 +25,32 @@ export default function Footer({
 
   return (
     <footer className="w-full py-8 flex flex-col items-center justify-center gap-4 mt-auto">
-      {/* Tag Fixa Aluno(a) / Mentorado(a) */}
-      <a 
-        href={fixedTagUrl}
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="mb-2 flex flex-col items-center justify-between rounded-2xl bg-[#fdf8f5] border-2 hover:opacity-95 active:scale-98 transition-all text-center w-[184px] min-h-[92px] cursor-pointer shadow-md overflow-hidden pt-2.5 pb-2 px-3"
-        style={{ borderColor: '#E9A7B6' }}
-        title="Gabi´s sweets"
-      >
-        <span 
-          className="text-[9px] font-extrabold tracking-[0.2em] uppercase select-none px-1 mb-1 leading-tight"
-          style={{ color: '#E9A7B6' }}
+      {/* Tag Fixa Aluno(a) / Mentorado(a) - exibida apenas no painel Admin */}
+      {showTag && (
+        <a 
+          href={fixedTagUrl}
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="mb-2 flex flex-col items-center justify-between rounded-2xl bg-[#fdf8f5] border-2 hover:opacity-95 active:scale-98 transition-all text-center w-[184px] min-h-[92px] cursor-pointer shadow-md overflow-hidden pt-2.5 pb-2 px-3"
+          style={{ borderColor: '#E9A7B6' }}
+          title="Gabi´s sweets"
         >
-          {fixedTagTitle}
-        </span>
-        <div className="w-full flex-1 flex items-center justify-center overflow-hidden bg-transparent py-0.5">
-          <img 
-            src={fixedTagLogo} 
-            alt="Gabi´s sweets" 
-            className="h-[56px] max-h-[60px] w-auto max-w-[160px] object-contain"
-            referrerPolicy="no-referrer"
-          />
-        </div>
-      </a>
+          <span 
+            className="text-[9px] font-extrabold tracking-[0.2em] uppercase select-none px-1 mb-1 leading-tight"
+            style={{ color: '#E9A7B6' }}
+          >
+            {fixedTagTitle}
+          </span>
+          <div className="w-full flex-1 flex items-center justify-center overflow-hidden bg-transparent py-0.5">
+            <img 
+              src={fixedTagLogo} 
+              alt="Gabi´s sweets" 
+              className="h-[56px] max-h-[60px] w-auto max-w-[160px] object-contain"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+        </a>
+      )}
 
       {/* Developed By - Easy Byz Creator with fixed color #342825 & reduced spacing */}
       <div className="flex flex-col items-center justify-center">

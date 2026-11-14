@@ -10370,6 +10370,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
           tagTitle={settings?.tagTitle}
           tagLogo={settings?.tagLogo}
           tagUrl={settings?.tagUrl}
+          showTag={true}
         />
       </div>
       </main>
