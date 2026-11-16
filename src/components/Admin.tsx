@@ -7074,7 +7074,9 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                           required
                         >
                           <option value="">Selecione uma categoria...</option>
-                          {categories.map((cat, idx) => (
+                          {[...categories]
+                            .sort((a, b) => (a.title || '').localeCompare(b.title || '', 'pt-BR', { sensitivity: 'base' }))
+                            .map((cat, idx) => (
                             <option key={cat.id ? `cat-opt-${cat.id}-${idx}` : `cat-opt-${idx}`} value={cat.id}>
                               {cat.title}
                             </option>
@@ -7788,7 +7790,9 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                                     className="text-xs p-2 rounded-lg border border-amber-400 bg-white text-gray-900 font-bold max-w-[200px] shadow-2xs"
                                   >
                                     <option value="">Selecione a categoria...</option>
-                                    {categories.map((c) => (
+                                    {[...categories]
+                                      .sort((a, b) => (a.title || '').localeCompare(b.title || '', 'pt-BR', { sensitivity: 'base' }))
+                                      .map((c) => (
                                       <option key={c.id} value={c.id}>{c.title}</option>
                                     ))}
                                   </select>

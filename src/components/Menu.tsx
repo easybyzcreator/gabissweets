@@ -1546,15 +1546,6 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       toast.error('Please enter a valid date in MM/DD format (Month/Day)!');
       return;
     }
-    if (!formData.email.trim()) {
-      toast.error('E-mail is required!');
-      return;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email.trim())) {
-      toast.error('Please enter a valid email address!');
-      return;
-    }
 
     // Delivery Neighborhood Validation
     const isDelivery = formData.deliveryOption === 'delivery';
@@ -1756,7 +1747,6 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       message += `*--- ${t.whatsappData} ---*\n`;
       message += `*${t.fullName}:* ${formData.nome}\n`;
       message += `*${t.phone}:* ${formData.telefone}\n`;
-      message += `*${t.email}:* ${formData.email}\n`;
       message += `*${t.birthday}:* ${formData.aniversario}\n`;
       message += `*${settings.language === 'en' ? 'Order Type' : 'Modalidade'}:* ${formData.deliveryOption === 'delivery' ? (settings.language === 'en' ? 'Delivery (Address)' : 'Entrega (Delivery)') : (settings.language === 'en' ? 'Pick Up' : 'Retirada (Pick Up)')}\n`;
       if (isDelivery) {
@@ -2276,7 +2266,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       }}
                       className="glass-box rounded-2xl p-3.5 sm:p-4 md:p-5 flex gap-3.5 sm:gap-4 items-start sm:items-center cursor-pointer hover:shadow-md transition-all duration-300 w-full"
                     >
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl overflow-hidden flex-shrink-0 bg-white/50 shadow-sm border border-black/5 self-start sm:self-center">
+                      <div className="w-24 h-24 sm:w-[116px] sm:h-[116px] md:w-[134px] md:h-[134px] rounded-xl overflow-hidden flex-shrink-0 bg-white/50 shadow-sm border border-black/5 self-start sm:self-center">
                         <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
                       </div>
                       <div className="flex-1 min-w-0 text-black flex flex-col justify-between self-stretch gap-2">
@@ -3555,17 +3545,6 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           />
                         </div>
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-bold uppercase text-black">{t.email}</label>
-                        <input 
-                          required
-                          type="email" 
-                          className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 outline-none text-black"
-                          style={{ '--tw-ring-color': settings.primaryColor } as any}
-                          value={formData.email}
-                          onChange={e => setFormData({...formData, email: e.target.value})}
-                        />
-                      </div>
 
                       {/* Modalidade de Entrega / Retirada */}
                       <div className="space-y-1.5 pt-1">
@@ -3926,7 +3905,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
               {/* Scrollable Container */}
               <div className="overflow-y-auto w-full flex-grow">
                 {/* Hero Product Image */}
-                <div className="w-full aspect-[4/3] bg-white flex items-center justify-center overflow-hidden">
+                <div className="w-full aspect-square bg-white flex items-center justify-center overflow-hidden">
                   <img 
                     src={selectedProductForDetails.image} 
                     alt={selectedProductForDetails.title} 
@@ -3960,6 +3939,24 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       </span>
                     )}
                   </div>
+
+                  {/* Extended Description Section (shown first) */}
+                  <div className="space-y-2 text-black">
+                    <h3 className="text-xs font-black uppercase tracking-wider text-black/60">Product Description</h3>
+                    <p className="text-sm leading-relaxed text-black/80 font-medium whitespace-pre-wrap">
+                      {selectedProductForDetails.description || 'No detailed specifications provided.'}
+                    </p>
+                  </div>
+
+                  {/* Ingredients Section */}
+                  {selectedProductForDetails.ingredients && (
+                    <div className="space-y-1.5 pt-3 border-t border-gray-200/40 text-black">
+                      <h3 className="text-xs font-black uppercase tracking-wider text-black/60">Ingredients</h3>
+                      <p className="text-xs leading-relaxed text-black/75 font-medium whitespace-pre-wrap">
+                        {selectedProductForDetails.ingredients}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Pricing and Size Options Display */}
                   <div className="p-4 rounded-2xl bg-white/50 border border-white/20">
@@ -4148,24 +4145,6 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       </div>
                     )}
                   </div>
-
-                  {/* Extended Description Section */}
-                  <div className="space-y-2 text-black">
-                    <h3 className="text-xs font-black uppercase tracking-wider text-black/60">Product Description</h3>
-                    <p className="text-sm leading-relaxed text-black/80 font-medium whitespace-pre-wrap">
-                      {selectedProductForDetails.description || 'No detailed specifications provided.'}
-                    </p>
-                  </div>
-
-                  {/* Ingredients Section */}
-                  {selectedProductForDetails.ingredients && (
-                    <div className="space-y-1.5 pt-3 border-t border-gray-200/40 text-black">
-                      <h3 className="text-xs font-black uppercase tracking-wider text-black/60">Ingredients</h3>
-                      <p className="text-xs leading-relaxed text-black/75 font-medium whitespace-pre-wrap">
-                        {selectedProductForDetails.ingredients}
-                      </p>
-                    </div>
-                  )}
 
                   {/* Cupcake & Customizable Sweets Customization */}
                   {selectedProductForDetails.isCustomCupcake && (() => {
@@ -5616,7 +5595,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
               <div className="overflow-y-auto w-full flex-grow">
                 {/* Hero Product Image */}
                 {selectedDishForNutritionalInfo.image ? (
-                  <div className="w-full aspect-[4/3] bg-white flex items-center justify-center overflow-hidden">
+                  <div className="w-full aspect-square bg-white flex items-center justify-center overflow-hidden">
                     <img 
                       src={selectedDishForNutritionalInfo.image} 
                       alt={selectedDishForNutritionalInfo.title} 
@@ -5646,21 +5625,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     })()}
                   </div>
 
-                  {/* Pricing Display */}
-                  {selectedDishForNutritionalInfo.price > 0 && (
-                    <div className="p-4 rounded-2xl bg-white/50 border border-white/20">
-                      <label className="text-[10px] font-black uppercase text-black/50 block tracking-wider mb-1">
-                        PRICE DETAILS
-                      </label>
-                      <div className="flex items-baseline gap-2">
-                        <p className="text-2xl font-serif font-black text-black">
-                          {currencySymbol}{selectedDishForNutritionalInfo.price.toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Extended Description Section */}
+                  {/* Extended Description Section (shown first) */}
                   {(selectedDishForNutritionalInfo.description || selectedDishForNutritionalInfo.ingredients) && (
                     <div className="space-y-2 text-black">
                       <h3 className="text-xs font-black uppercase tracking-wider text-black/60">Product Description</h3>
@@ -5676,6 +5641,20 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                             : `INGREDIENTS: ${selectedDishForNutritionalInfo.ingredients}`}
                         </p>
                       )}
+                    </div>
+                  )}
+
+                  {/* Pricing Display */}
+                  {selectedDishForNutritionalInfo.price > 0 && (
+                    <div className="p-4 rounded-2xl bg-white/50 border border-white/20">
+                      <label className="text-[10px] font-black uppercase text-black/50 block tracking-wider mb-1">
+                        PRICE DETAILS
+                      </label>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-2xl font-serif font-black text-black">
+                          {currencySymbol}{selectedDishForNutritionalInfo.price.toFixed(2)}
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
