@@ -46,11 +46,11 @@ export async function ensureDefaultCatalogSeeded() {
 
     if (!currentGeneral.brandName || currentGeneral.brandName === 'EGN' || currentGeneral.brandName === 'Marmitaria' || currentGeneral.brandName === 'Andréia Cakes USA') {
       bakerySettingsUpdates.brandName = 'Gabi´s sweets';
-      bakerySettingsUpdates.pwaIcon = 'https://i.ibb.co/TqdtdsC8/Whats-App-Image-2026-10-112-at-5-43-28-PM.jpg';
-      bakerySettingsUpdates.slogan = 'Custom & Artisanal Cakes and Sweets';
-      bakerySettingsUpdates.logo = 'https://i.ibb.co/TqdtdsC8/Whats-App-Image-2026-10-112-at-5-43-28-PM.jpg';
+      bakerySettingsUpdates.pwaIcon = 'https://raw.githubusercontent.com/easybyzcreator/imagens/c0a4d31d6e45e9b8a82d87e8535bfe3d5ecfa656/gabis%20sweets.png';
+      bakerySettingsUpdates.slogan = 'Bolos e Doces Artesanais Personalizados';
+      bakerySettingsUpdates.logo = 'https://raw.githubusercontent.com/easybyzcreator/imagens/c0a4d31d6e45e9b8a82d87e8535bfe3d5ecfa656/gabis%20sweets.png';
       bakerySettingsUpdates.currency = 'USD';
-      bakerySettingsUpdates.language = 'en';
+      bakerySettingsUpdates.language = 'pt';
       bakerySettingsUpdates.primaryColor = '#865d39';
       bakerySettingsUpdates.whatsappCountryCode = '+1';
       bakerySettingsUpdates.backgroundImage = 'https://i.ibb.co/X0vYy7L/cakes.png';

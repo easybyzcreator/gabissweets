@@ -180,18 +180,18 @@ const getOrderScheduledInfo = (order: Order): { date: Date | null, timeStr: stri
     if (raw.includes('/')) {
       const parts = raw.split('/');
       if (parts.length === 3) {
-        let p0 = parseInt(parts[0], 10);
-        let p1 = parseInt(parts[1], 10);
-        let y = parseInt(parts[2], 10);
-        let m = p0;
-        let d = p1;
-        if (p0 > 12) {
-          d = p0;
-          m = p1;
+        const p0 = parseInt(parts[0], 10);
+        const p1 = parseInt(parts[1], 10);
+        const y = parseInt(parts[2], 10);
+        let d = p0;
+        let m = p1;
+        if (p1 > 12 || (order.orderLanguage === 'en' && p0 <= 12 && p1 <= 31 && p1 > 12)) {
+          m = p0;
+          d = p1;
         }
-        if (d && m && y) {
+        if (d && m && y && m <= 12) {
           date = new Date(y, m - 1, d);
-          dateDisplay = `${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')}/${y}`;
+          dateDisplay = `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
         }
       }
     } else if (raw.includes('-')) {
@@ -202,7 +202,7 @@ const getOrderScheduledInfo = (order: Order): { date: Date | null, timeStr: stri
         const d = parseInt(parts[2], 10);
         if (d && m && y) {
           date = new Date(y, m - 1, d);
-          dateDisplay = `${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')}/${y}`;
+          dateDisplay = `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
         }
       }
     }
@@ -224,21 +224,23 @@ const getOrderScheduledInfo = (order: Order): { date: Date | null, timeStr: stri
       const m = parseInt(ymdMatch[2], 10);
       const d = parseInt(ymdMatch[3], 10);
       date = new Date(y, m - 1, d);
-      dateDisplay = `${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')}/${y}`;
+      dateDisplay = `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
     } else {
       const slashMatch = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
       if (slashMatch) {
-        let part1 = parseInt(slashMatch[1], 10);
-        let part2 = parseInt(slashMatch[2], 10);
-        let y = parseInt(slashMatch[3], 10);
-        let m = part1;
-        let d = part2;
-        if (part1 > 12) {
-          d = part1;
-          m = part2;
+        const part1 = parseInt(slashMatch[1], 10);
+        const part2 = parseInt(slashMatch[2], 10);
+        const y = parseInt(slashMatch[3], 10);
+        let d = part1;
+        let m = part2;
+        if (part2 > 12 || (order.orderLanguage === 'en' && part1 <= 12)) {
+          m = part1;
+          d = part2;
         }
-        date = new Date(y, m - 1, d);
-        dateDisplay = `${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')}/${y}`;
+        if (m <= 12) {
+          date = new Date(y, m - 1, d);
+          dateDisplay = `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
+        }
       }
     }
   }
@@ -261,9 +263,9 @@ const getOrderScheduledInfo = (order: Order): { date: Date | null, timeStr: stri
       const d = dObj.getDate();
       const m = dObj.getMonth() + 1;
       const y = dObj.getFullYear();
-      dateDisplay = `${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')}/${y}`;
+      dateDisplay = `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
       if (!timeStr) {
-        timeStr = dObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        timeStr = dObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
       }
     }
   }
@@ -1238,8 +1240,8 @@ export default function Admin({ settings, setSettings, setIsAdmin }: {
         minOrderValue: parsedMin,
         whatsappNumber: settings.whatsappNumber || '',
         whatsappCountryCode: settings.whatsappCountryCode || '+1',
-        language: settings.language || ('en' as const),
-        currency: settings.currency || ('USD' as const)
+        language: 'pt' as const,
+        currency: 'USD' as const
       };
       
       await Promise.race([
@@ -2252,24 +2254,32 @@ export default function Admin({ settings, setSettings, setIsAdmin }: {
     }
   };
 
-  const handleUpdateScheduledDate = async (orderId: string, ymdValue: string) => {
-    if (!ymdValue) return;
-    const [year, month, day] = ymdValue.split('-');
-    if (!year || !month || !day) return;
-    const formattedMMDDYYYY = `${month.padStart(2, '0')}/${day.padStart(2, '0')}/${year}`;
+  const handleUpdateScheduledDate = async (orderId: string, dateValue: string) => {
+    if (!dateValue) return;
+    let formattedDDMMYYYY = '';
+    if (dateValue.includes('-')) {
+      const [year, month, day] = dateValue.split('-');
+      if (!year || !month || !day) return;
+      formattedDDMMYYYY = `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    } else if (dateValue.includes('/')) {
+      const [day, month, year] = dateValue.split('/');
+      if (!day || !month || !year || year.length !== 4) return;
+      formattedDDMMYYYY = `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    }
+    if (!formattedDDMMYYYY) return;
     try {
       await updateDoc(doc(db, 'pedidos', orderId), {
-        scheduledDate: formattedMMDDYYYY,
-        pickupDate: formattedMMDDYYYY
+        scheduledDate: formattedDDMMYYYY,
+        pickupDate: formattedDDMMYYYY
       });
       if (selectedOrderModal && selectedOrderModal.id === orderId) {
         setSelectedOrderModal(prev => prev ? {
           ...prev,
-          scheduledDate: formattedMMDDYYYY,
-          pickupDate: formattedMMDDYYYY
+          scheduledDate: formattedDDMMYYYY,
+          pickupDate: formattedDDMMYYYY
         } : null);
       }
-      toast.success(`Data de entrega reagendada para ${formattedMMDDYYYY}!`);
+      toast.success(`Data de entrega reagendada para ${formattedDDMMYYYY}!`);
       setIsEditingScheduledDate(false);
     } catch (err) {
       console.error(err);
@@ -2597,14 +2607,14 @@ export default function Admin({ settings, setSettings, setIsAdmin }: {
       const parts = str.split('/');
       if (parts.length !== 3) return null;
       
-      let month = parseInt(parts[0]);
-      let day = parseInt(parts[1]);
-      let year = parseInt(parts[2]);
+      let day = parseInt(parts[0]);
+      let month = parseInt(parts[1]);
+      const year = parseInt(parts[2]);
 
-      // Always treat as MM/DD/YYYY by default (USA pattern), but if the first part (month) is > 12, it is definitely DD/MM/YYYY
-      if (month > 12) {
-        day = parseInt(parts[0]);
-        month = parseInt(parts[1]);
+      // Padrão DD/MM/AAAA (com fallback caso o segundo número seja > 12 ou pedido legado em inglês)
+      if (month > 12 || (lang === 'en' && day <= 12)) {
+        month = parseInt(parts[0]);
+        day = parseInt(parts[1]);
       }
       
       if (!day || !month || !year || month > 12) return null;
@@ -2955,7 +2965,7 @@ export default function Admin({ settings, setSettings, setIsAdmin }: {
         msg += `*E-mail:* ${order.email}\n`;
       }
 
-      msg += `*Modalidade:* ${scheduled.isDelivery ? 'Entrega (Delivery)' : 'Retirada (Pick Up)'}\n`;
+      msg += `*Modalidade:* ${scheduled.isDelivery ? 'Entrega' : 'Retirada'}\n`;
       if (scheduled.dateDisplay) {
         msg += `*${scheduled.isDelivery ? 'Data de Entrega' : 'Data de Retirada'}:* ${scheduled.dateDisplay}\n`;
       }
@@ -3141,7 +3151,7 @@ DATA CRIACAO: ${dateStr}
 CLIENTE: ${customerName.toUpperCase()}
 TELEFONE: ${phoneFormatted}
 ${order.email ? `EMAIL: ${order.email}\n` : ''}
-AGENDAMENTO: ${scheduledInfo.dateDisplay || 'Data não definida'} (${scheduledInfo.isDelivery ? 'DELIVERY' : 'RETIRADA'} - ${scheduledInfo.timeStr || '18:00'})
+AGENDAMENTO: ${scheduledInfo.dateDisplay || 'Data não definida'} (${scheduledInfo.isDelivery ? 'ENTREGA' : 'RETIRADA'} - ${scheduledInfo.timeStr || '18:00'})
 ENDEREÇO: ${addressFormatted.toUpperCase()}
 
 STATUS PGTO: ${paymentStatusLabel}
@@ -3183,7 +3193,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
         <div style="margin-bottom: 5px;">
           <span style="font-weight: bold; font-size: 9px; text-transform: uppercase; color: #444; display: block;">AGENDAMENTO / MODALIDADE:</span>
           <div style="font-size: 11px; font-weight: bold;">📅 ${scheduledInfo.dateDisplay || 'Data não definida'}</div>
-          <div style="font-size: 11px; font-weight: bold;">🕒 ${scheduledInfo.isDelivery ? 'DELIVERY / ENTREGA' : 'RETIRADA / BALCÃO'} (${scheduledInfo.timeStr || '18:00'})</div>
+          <div style="font-size: 11px; font-weight: bold;">🕒 ${scheduledInfo.isDelivery ? 'ENTREGA' : 'RETIRADA / BALCÃO'} (${scheduledInfo.timeStr || '18:00'})</div>
         </div>
 
         <div style="margin-bottom: 5px;">
@@ -3228,7 +3238,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
         ${(order.taxAmount && order.taxAmount > 0) ? `
         <div style="text-align: right; font-size: 10px; margin-top: 6px;">
           <div>SUBTOTAL: ${currencySymbol} ${(order.subtotal || (order.total - order.taxAmount)).toFixed(2).replace('.', ',')}</div>
-          <div style="margin-top: 2px;">TAX (${order.taxRate || 8.25}%): + ${currencySymbol} ${order.taxAmount.toFixed(2).replace('.', ',')}</div>
+          <div style="margin-top: 2px;">IMPOSTO (${order.taxRate || 8.25}%): + ${currencySymbol} ${order.taxAmount.toFixed(2).replace('.', ',')}</div>
         </div>
         ` : ''}
         
@@ -3259,14 +3269,14 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
     
     if (isNaN(p0) || isNaN(p1)) return false;
     
-    // Primary MM/DD format
-    let month = p0 - 1; // 0-indexed month
-    let day = p1;
+    // Primary DD/MM format
+    let day = p0;
+    let month = p1 - 1; // 0-indexed month
     
-    // Support legacy DD/MM (when first number > 12)
-    if (p0 > 12 && p1 <= 12) {
-      day = p0;
-      month = p1 - 1;
+    // Support legacy MM/DD (when second number > 12 or explicit legacy English order)
+    if ((p1 > 12 && p0 <= 12) || (orderLanguage === 'en' && p0 <= 12 && p1 > 12)) {
+      month = p0 - 1;
+      day = p1;
     }
     
     if (month < 0 || month > 11 || day < 1 || day > 31) return false;
@@ -3341,14 +3351,14 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
       const parts = str.split('/');
       if (parts.length !== 3) return null;
       
-      let month = parseInt(parts[0]);
-      let day = parseInt(parts[1]);
-      let year = parseInt(parts[2]);
+      let day = parseInt(parts[0]);
+      let month = parseInt(parts[1]);
+      const year = parseInt(parts[2]);
 
-      // Always treat as MM/DD/YYYY by default (USA pattern), but if the first part (month) is > 12, it is definitely DD/MM/YYYY
-      if (month > 12) {
-        day = parseInt(parts[0]);
-        month = parseInt(parts[1]);
+      // Padrão DD/MM/AAAA (com fallback caso o segundo número seja > 12 ou pedido legado em inglês)
+      if (month > 12 || (lang === 'en' && day <= 12)) {
+        month = parseInt(parts[0]);
+        day = parseInt(parts[1]);
       }
       
       if (!day || !month || !year || month > 12) return null;
@@ -3362,7 +3372,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
       // Try to use pickupDate first if available, otherwise use createdAt
       let orderDate: Date | null = null;
       if (order.pickupDate) {
-        orderDate = parseDateString(order.pickupDate, order.orderLanguage || settings.language || 'pt');
+        orderDate = parseDateString(order.pickupDate, order.orderLanguage || 'pt');
       }
       
       if (!orderDate && order.createdAt?.toDate) {
@@ -3372,11 +3382,11 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
 
       if (orderDate) {
         if (startDate && startDate.length === 10) {
-          const start = parseDateString(startDate, settings.language || 'pt');
+          const start = parseDateString(startDate, 'pt');
           if (start && orderDate < start) matchesDate = false;
         }
         if (endDate && endDate.length === 10) {
-          const end = parseDateString(endDate, settings.language || 'pt');
+          const end = parseDateString(endDate, 'pt');
           if (end && orderDate > end) matchesDate = false;
         }
       } else {
@@ -3579,12 +3589,15 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
       if (str.includes('/')) {
         const parts = str.split('/');
         if (parts.length === 3) {
-          if (lang === 'en') {
-            const d = new Date(parseInt(parts[2], 10), parseInt(parts[0], 10) - 1, parseInt(parts[1], 10));
+          const p0 = parseInt(parts[0], 10);
+          const p1 = parseInt(parts[1], 10);
+          const p2 = parseInt(parts[2], 10);
+          if (lang === 'en' && p0 <= 12) {
+            const d = new Date(p2, p0 - 1, p1);
             d.setHours(0,0,0,0);
             return d;
           } else {
-            const d = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+            const d = new Date(p2, p1 - 1, p0);
             d.setHours(0,0,0,0);
             return d;
           }
@@ -4283,7 +4296,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
           <div className="h-12 w-12 flex items-center justify-center rounded-full overflow-hidden border border-white/50 bg-white shadow-sm">
             <img src={settings?.logo} alt="Logo" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
           </div>
-          <span className="font-serif font-bold text-lg opacity-90">{settings?.brandName || 'Easy Plate Menu'}</span>
+          <span className="font-serif font-bold text-lg opacity-90">{settings?.brandName || 'Gabi´s sweets'}</span>
         </div>
         
         <nav className="flex flex-col gap-2">
@@ -4441,22 +4454,26 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                 <div className="flex flex-col gap-2 bg-gray-50/90 p-4 rounded-2xl border border-gray-200 shadow-inner shrink-0">
                   <div className="text-[10px] font-black uppercase tracking-wider text-gray-600">Filtrar por Período</div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex items-center gap-1.5 bg-white border border-gray-300 rounded-xl px-3 py-1.5 shadow-xs">
-                      <span className="text-[10px] font-bold text-gray-400 uppercase">De:</span>
-                      <input 
-                        type="date" 
-                        className="border-0 bg-transparent text-xs font-bold text-gray-800 outline-none cursor-pointer"
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold text-gray-500 uppercase">De:</span>
+                      <BRDatePicker
+                        compact
+                        outputFormat="iso"
+                        placeholder="DD/MM/AAAA"
                         value={financeStartDate}
-                        onChange={e => setFinanceStartDate(e.target.value)}
+                        onChange={val => setFinanceStartDate(val)}
+                        className="border-gray-300 shadow-xs"
                       />
                     </div>
-                    <div className="flex items-center gap-1.5 bg-white border border-gray-300 rounded-xl px-3 py-1.5 shadow-xs">
-                      <span className="text-[10px] font-bold text-gray-400 uppercase">Até:</span>
-                      <input 
-                        type="date" 
-                        className="border-0 bg-transparent text-xs font-bold text-gray-800 outline-none cursor-pointer"
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold text-gray-500 uppercase">Até:</span>
+                      <BRDatePicker
+                        compact
+                        outputFormat="iso"
+                        placeholder="DD/MM/AAAA"
                         value={financeEndDate}
-                        onChange={e => setFinanceEndDate(e.target.value)}
+                        onChange={val => setFinanceEndDate(val)}
+                        className="border-gray-300 shadow-xs"
                       />
                     </div>
                   </div>
@@ -4780,12 +4797,13 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Data do Gasto</label>
-                        <input 
-                          type="date" 
-                          className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-xs font-bold text-gray-800 outline-none focus:ring-2 focus:ring-emerald-500"
+                        <label className="text-[10px] font-bold uppercase text-gray-500">Data do Gasto (DD/MM/AAAA)</label>
+                        <BRDatePicker
+                          outputFormat="iso"
+                          placeholder="DD/MM/AAAA"
                           value={newVarCost.date || ''}
-                          onChange={e => setNewVarCost({...newVarCost, date: e.target.value})}
+                          onChange={val => setNewVarCost({ ...newVarCost, date: val })}
+                          className="p-2.5 bg-white border-gray-300"
                         />
                       </div>
                     </div>
@@ -5389,7 +5407,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
               {/* TOPO DO BOLO */}
               <div className="glass p-6 rounded-3xl space-y-4 md:col-span-2">
                 <div className="flex justify-between items-center pb-2 border-b border-black/10">
-                  <h3 className="text-sm font-serif font-extrabold uppercase tracking-widest text-[#000000]" style={{ color: '#000000' }}>Topo do Bolo (Topper)</h3>
+                  <h3 className="text-sm font-serif font-extrabold uppercase tracking-widest text-[#000000]" style={{ color: '#000000' }}>Topo do Bolo</h3>
                   <button 
                     onClick={() => addCakeOptionItem('cakeToppers', '')}
                     className="p-1.5 rounded-full bg-blue-500 text-white hover:bg-blue-600 active:scale-95 transition-transform cursor-pointer"
@@ -5407,7 +5425,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                           <input 
                             type="text"
                             value={item}
-                            placeholder="Ex: Flores, Topper"
+                            placeholder="Ex: Flores, Topo Personalizado"
                             onChange={(e) => updateCakeOptionItem('cakeToppers', idx, e.target.value)}
                             className="flex-grow bg-white/60 border border-gray-200 py-2.5 px-4 rounded-xl text-sm"
                           />
@@ -5677,7 +5695,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                     className="w-full p-3 rounded-xl border border-gray-300"
                     value={settings?.brandName || ''}
                     onChange={e => handleBrandNameChange(e.target.value)}
-                    placeholder="Ex: Easy Plate Menu"
+                    placeholder="Ex: Gabi´s sweets"
                   />
                 </div>
                 <div className="space-y-2">
@@ -6243,7 +6261,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                         className="w-full p-2.5 rounded-xl border border-gray-300 text-sm font-medium bg-white"
                         value={settings?.introSubtitle || ''}
                         onChange={e => setSettings({...settings, introSubtitle: e.target.value})}
-                        placeholder="Ex: From sacred nature to your plate"
+                        placeholder="Ex: Bolos e doces artesanais feitos com carinho"
                       />
                     </div>
                     <div className="space-y-1">
@@ -8086,59 +8104,59 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                           type="button"
                           onClick={() => {
                             const standardCakes = [
-                              { id: 'size_c15_' + Math.random().toString(36).substring(2, 8), name: '15 Slices (~1.5kg)', price: 75 },
-                              { id: 'size_c25_' + Math.random().toString(36).substring(2, 8), name: '25 Slices (~2.5kg)', price: 125 },
-                              { id: 'size_c35_' + Math.random().toString(36).substring(2, 8), name: '35 Slices (~3.5kg)', price: 175 },
-                              { id: 'size_c50_' + Math.random().toString(36).substring(2, 8), name: '50 Slices (~5.0kg)', price: 250 }
+                              { id: 'size_c15_' + Math.random().toString(36).substring(2, 8), name: '15 Fatias (~1,5kg)', price: 75 },
+                              { id: 'size_c25_' + Math.random().toString(36).substring(2, 8), name: '25 Fatias (~2,5kg)', price: 125 },
+                              { id: 'size_c35_' + Math.random().toString(36).substring(2, 8), name: '35 Fatias (~3,5kg)', price: 175 },
+                              { id: 'size_c50_' + Math.random().toString(36).substring(2, 8), name: '50 Fatias (~5,0kg)', price: 250 }
                             ];
                             setNewProduct({
                               ...newProduct,
                               hasSizes: true,
                               sizes: standardCakes
                             });
-                            toast.success('Cake standard sizes loaded!');
+                            toast.success('Tamanhos padrão de bolo carregados!');
                           }}
                           className="px-3 py-1.5 bg-[#865d39] hover:bg-[#6b492b] text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 shrink-0 transition-all cursor-pointer"
                         >
-                          🎂 Tamanhos de Bolos (15 to 50 slices)
+                          🎂 Tamanhos de Bolos (15 a 50 fatias)
                         </button>
                         <button
                           type="button"
                           onClick={() => {
                             const standardSweets = [
-                              { id: 'size_d25_' + Math.random().toString(36).substring(2, 8), name: 'Box of 25 units', price: 25 },
-                              { id: 'size_d50_' + Math.random().toString(36).substring(2, 8), name: 'Box of 50 units', price: 48 },
-                              { id: 'size_d100_' + Math.random().toString(36).substring(2, 8), name: '100 units (Party Box)', price: 90 }
+                              { id: 'size_d25_' + Math.random().toString(36).substring(2, 8), name: 'Caixa com 25 unidades', price: 25 },
+                              { id: 'size_d50_' + Math.random().toString(36).substring(2, 8), name: 'Caixa com 50 unidades', price: 48 },
+                              { id: 'size_d100_' + Math.random().toString(36).substring(2, 8), name: '100 unidades (Caixa Festa)', price: 90 }
                             ];
                             setNewProduct({
                               ...newProduct,
                               hasSizes: true,
                               sizes: standardSweets
                             });
-                            toast.success('Brigadeiro standard sizes loaded!');
+                            toast.success('Tamanhos padrão de brigadeiros carregados!');
                           }}
                           className="px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 shrink-0 transition-all cursor-pointer"
                         >
-                          🍬 Brigadeiros (25, 50, 100 units)
+                          🍬 Brigadeiros (25, 50, 100 unid.)
                         </button>
                         <button
                           type="button"
                           onClick={() => {
                             const standardSavories = [
-                              { id: 'size_s25_' + Math.random().toString(36).substring(2, 8), name: 'Box of 25 units', price: 25 },
-                              { id: 'size_s50_' + Math.random().toString(36).substring(2, 8), name: 'Box of 50 units', price: 48 },
-                              { id: 'size_s100_' + Math.random().toString(36).substring(2, 8), name: '100 units (Party Box)', price: 90 }
+                              { id: 'size_s25_' + Math.random().toString(36).substring(2, 8), name: 'Caixa com 25 unidades', price: 25 },
+                              { id: 'size_s50_' + Math.random().toString(36).substring(2, 8), name: 'Caixa com 50 unidades', price: 48 },
+                              { id: 'size_s100_' + Math.random().toString(36).substring(2, 8), name: '100 unidades (Caixa Festa)', price: 90 }
                             ];
                             setNewProduct({
                               ...newProduct,
                               hasSizes: true,
                               sizes: standardSavories
                             });
-                            toast.success('Savories standard sizes loaded!');
+                            toast.success('Tamanhos padrão de salgados carregados!');
                           }}
                           className="px-3 py-1.5 bg-orange-700 hover:bg-orange-800 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 shrink-0 transition-all cursor-pointer"
                         >
-                          🥟 Salgados (25, 50, 100 units)
+                          🥟 Salgados (25, 50, 100 unid.)
                         </button>
                       </div>
                     </div>
@@ -8153,7 +8171,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                           <label className="text-[10px] font-bold uppercase text-gray-700">Nome da Opção / Tamanho *</label>
                           <input 
                             type="text" 
-                            placeholder="Ex: 15 Slices (~1.5kg), Box of 25 units..."
+                            placeholder="Ex: 15 Fatias (~1,5kg), Caixa com 25 unidades..."
                             className="w-full p-2.5 text-xs rounded-xl border border-gray-300 bg-white text-black font-medium focus:ring-2 focus:ring-amber-800/30"
                             value={sizeForm.name}
                             onChange={e => setSizeForm({ ...sizeForm, name: e.target.value })}
@@ -8835,7 +8853,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-gray-100">
                 <div className="text-base font-bold text-gray-900 font-serif">
                   {orderViewMode === 'week' 
-                    ? `Semana de ${String(weekDays[0].getMonth() + 1).padStart(2, '0')}/${String(weekDays[0].getDate()).padStart(2, '0')} a ${String(weekDays[6].getMonth() + 1).padStart(2, '0')}/${String(weekDays[6].getDate()).padStart(2, '0')} de ${weekDays[6].getFullYear()}`
+                    ? `Semana de ${String(weekDays[0].getDate()).padStart(2, '0')}/${String(weekDays[0].getMonth() + 1).padStart(2, '0')} a ${String(weekDays[6].getDate()).padStart(2, '0')}/${String(weekDays[6].getMonth() + 1).padStart(2, '0')} de ${weekDays[6].getFullYear()}`
                     : `${MONTH_NAMES_PT[calendarDate.getMonth()]} de ${calendarDate.getFullYear()}`}
                 </div>
                 <div className="px-3.5 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full border border-blue-200/80 uppercase tracking-wide flex items-center gap-1.5 self-start sm:self-auto shadow-2xs">
@@ -8853,7 +8871,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                 {weekDays.map((day, idx) => {
                   const dayOrders = getOrdersForDay(day);
                   const isTodayDay = isTodayCalendarDay(day);
-                  const dayStrUS = `${String(day.getMonth() + 1).padStart(2, '0')}/${String(day.getDate()).padStart(2, '0')}`;
+                  const dayStrBR = `${String(day.getDate()).padStart(2, '0')}/${String(day.getMonth() + 1).padStart(2, '0')}`;
                   return (
                     <div
                       key={idx}
@@ -8873,11 +8891,11 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                         
                         {isTodayDay ? (
                           <span className="px-3 py-0.5 rounded-full text-xs font-black text-white bg-blue-600 inline-flex items-center gap-1 my-1 shadow-xs">
-                            {dayStrUS} HOJE
+                            {dayStrBR} HOJE
                           </span>
                         ) : (
                           <span className="px-2.5 py-0.5 rounded-full text-xs font-bold text-gray-700 bg-white border border-gray-200 inline-block my-1 shadow-2xs">
-                            {dayStrUS}
+                            {dayStrBR}
                           </span>
                         )}
 
@@ -9052,39 +9070,23 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
             {orderViewMode === 'list' && (
               <div className="space-y-6">
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-black/60" size={18} />
-                    <input 
-                      type="text" 
-                      placeholder="MM/DD/AAAA"
-                      className="pl-10 p-2 rounded-xl border-2 border-white bg-white/70 text-black font-semibold text-sm w-32 placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-white"
-                      value={startDate}
-                      onChange={e => {
-                        let val = e.target.value.replace(/\D/g, '');
-                        if (val.length > 8) val = val.slice(0, 8);
-                        if (val.length > 4) val = val.slice(0, 2) + '/' + val.slice(2, 4) + '/' + val.slice(4);
-                        else if (val.length > 2) val = val.slice(0, 2) + '/' + val.slice(2);
-                        setStartDate(val);
-                      }}
-                    />
-                  </div>
+                  <BRDatePicker
+                    compact
+                    placeholder="DD/MM/AAAA"
+                    value={startDate}
+                    onChange={val => setStartDate(val)}
+                    className="border-2 border-white bg-white/80"
+                    inputClassName="w-24 text-sm font-semibold placeholder:text-black/50"
+                  />
                   <span className="text-white font-semibold drop-shadow-sm">até</span>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-black/60" size={18} />
-                    <input 
-                      type="text" 
-                      placeholder="MM/DD/AAAA"
-                      className="pl-10 p-2 rounded-xl border-2 border-white bg-white/70 text-black font-semibold text-sm w-32 placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-white"
-                      value={endDate}
-                      onChange={e => {
-                        let val = e.target.value.replace(/\D/g, '');
-                        if (val.length > 8) val = val.slice(0, 8);
-                        if (val.length > 4) val = val.slice(0, 2) + '/' + val.slice(2, 4) + '/' + val.slice(4);
-                        else if (val.length > 2) val = val.slice(0, 2) + '/' + val.slice(2);
-                        setEndDate(val);
-                      }}
-                    />
-                  </div>
+                  <BRDatePicker
+                    compact
+                    placeholder="DD/MM/AAAA"
+                    value={endDate}
+                    onChange={val => setEndDate(val)}
+                    className="border-2 border-white bg-white/80"
+                    inputClassName="w-24 text-sm font-semibold placeholder:text-black/50"
+                  />
                   <button 
                     onClick={() => {
                       setShowBatchSummary(false);
@@ -9264,7 +9266,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                         </h3>
                         {(order.isB2B || order.isPJ) && (
                           <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-black rounded-full flex items-center gap-1 border border-amber-200 uppercase tracking-widest animate-pulse">
-                            ★ Corporate PJ
+                            ★ Corporativo PJ
                           </span>
                         )}
                         {isBirthdayThisWeek(order.birthday, order.orderLanguage) && (
@@ -9282,7 +9284,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                         >
                           <MessageCircle size={14} className="text-green-600" /> {order.phone}
                         </a>
-                        <span className="flex items-center gap-1"><Calendar size={14} /> Criado em: {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleString('en-US') : 'N/A'}</span>
+                        <span className="flex items-center gap-1"><Calendar size={14} /> Criado em: {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleString('pt-BR') : 'N/A'}</span>
                         {order.pickupDate && (
                           <span 
                             className="flex items-center gap-1.5 font-black px-3 py-1 rounded-xl shadow-sm text-xs"
@@ -9482,11 +9484,11 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                                     <span>{currencySymbol} {(order.subtotal || (order.total - order.taxAmount)).toFixed(2).replace('.', ',')}</span>
                                   </div>
                                   <div className="flex justify-between text-amber-900">
-                                    <span className="opacity-60 font-medium">Sales Tax ({order.taxRate || 8.25}%):</span>
+                                    <span className="opacity-60 font-medium">Imposto ({order.taxRate || 8.25}%):</span>
                                     <span>+ {currencySymbol} {order.taxAmount.toFixed(2).replace('.', ',')}</span>
                                   </div>
                                   <div className="flex justify-between text-base font-extrabold border-t border-black/5 pt-1.5" style={{ color: settings?.primaryColor || '#865d39' }}>
-                                    <span>Total com Tax:</span>
+                                    <span>Total com Imposto:</span>
                                     <span>{currencySymbol} {order.total.toFixed(2).replace('.', ',')}</span>
                                   </div>
                                 </>
@@ -9503,7 +9505,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                           <div className="space-y-1">
                             <div className="font-bold uppercase opacity-40 text-[10px]">
-                              {(order.isB2B || order.isPJ) ? "Endereço Comercial / Delivery" : "Endereço de Entrega/Retirada"}
+                              {(order.isB2B || order.isPJ) ? "Endereço Comercial / Entrega" : "Endereço"}
                             </div>
                             <div className="p-3 bg-white/50 rounded-lg border border-white/20 font-medium">
                               {order.b2bAddress || order.address}
@@ -9654,16 +9656,18 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                         </span>
                       ) : (
                         <div className="flex items-center gap-2 pt-1">
-                          <input
-                            type="date"
+                          <BRDatePicker
+                            compact
+                            outputFormat="iso"
+                            placeholder="DD/MM/AAAA"
                             value={tempScheduledDate}
-                            onChange={(e) => setTempScheduledDate(e.target.value)}
-                            className="px-2 py-1 text-xs font-bold border border-blue-300 rounded-lg bg-blue-50/50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            onChange={val => setTempScheduledDate(val)}
+                            className="border-blue-300 bg-blue-50/50"
                           />
                           <button
                             type="button"
                             onClick={() => handleUpdateScheduledDate(selectedOrderModal.id, tempScheduledDate)}
-                            className="px-2.5 py-1 bg-blue-600 text-white font-bold text-xs rounded-lg hover:bg-blue-700 transition-all cursor-pointer shadow-xs"
+                            className="px-2.5 py-1.5 bg-blue-600 text-white font-bold text-xs rounded-lg hover:bg-blue-700 transition-all cursor-pointer shadow-xs shrink-0"
                           >
                             Salvar
                           </button>
@@ -9680,12 +9684,12 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                         {getOrderScheduledInfo(selectedOrderModal).isDelivery ? (
                           <>
                             <Truck size={14} className="text-blue-600" />
-                            <span>Delivery ({getOrderScheduledInfo(selectedOrderModal).timeStr || '18:00'})</span>
+                            <span>Entrega ({getOrderScheduledInfo(selectedOrderModal).timeStr || '18:00'})</span>
                           </>
                         ) : (
                           <>
                             <ShoppingBag size={14} className="text-purple-600" />
-                            <span>Retirada / Pick up ({getOrderScheduledInfo(selectedOrderModal).timeStr || '18:00'})</span>
+                            <span>Retirada ({getOrderScheduledInfo(selectedOrderModal).timeStr || '18:00'})</span>
                           </>
                         )}
                       </span>
@@ -10436,12 +10440,12 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Aniversário (MM/DD)</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Aniversário (DD/MM)</label>
                     <input 
                       type="text" 
                       className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 font-medium focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-none shadow-xs text-sm"
                       value={editCustomerForm.birthday || ''}
-                      placeholder="MM/DD"
+                      placeholder="DD/MM"
                       onChange={e => {
                         let val = e.target.value.replace(/\D/g, '');
                         if (val.length > 4) val = val.slice(0, 4);
@@ -10455,7 +10459,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="md:col-span-2 space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Rua / Logradouro</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Endereço (Rua e Número)</label>
                     <input 
                       type="text" 
                       className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 font-medium focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-none shadow-xs text-sm"
@@ -10464,7 +10468,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Número</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Apto / Unidade</label>
                     <input 
                       type="text" 
                       className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 font-medium focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-none shadow-xs text-sm"
@@ -10475,7 +10479,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">CEP</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Zip Code</label>
                     <input 
                       type="text" 
                       className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 font-mono font-medium focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-none shadow-xs text-sm"
@@ -10568,12 +10572,12 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Aniversário (MM/DD)</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Aniversário (DD/MM)</label>
                     <input 
                       type="text" 
                       className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-800/40"
                       value={newCustomerForm.birthday || ''}
-                      placeholder="MM/DD"
+                      placeholder="DD/MM"
                       onChange={e => {
                         let val = e.target.value.replace(/\D/g, '');
                         if (val.length > 4) val = val.slice(0, 4);
@@ -10587,7 +10591,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="md:col-span-2 space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Rua / Logradouro</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Endereço (Rua e Número)</label>
                     <input 
                       type="text" 
                       className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-800/40"
@@ -10596,7 +10600,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Número</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Apto / Unidade</label>
                     <input 
                       type="text" 
                       className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-800/40"
@@ -10607,7 +10611,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">CEP</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Zip Code</label>
                     <input 
                       type="text" 
                       className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 font-mono font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-800/40"
@@ -10687,12 +10691,12 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                     />
                   </div>
                    <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Aniversário (MM/DD)</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Aniversário (DD/MM)</label>
                     <input 
                       type="text" 
                       className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-800/40"
                       value={editOrderForm.birthday || ''}
-                      placeholder="MM/DD"
+                      placeholder="DD/MM"
                       onChange={e => {
                         let val = e.target.value.replace(/\D/g, '');
                         if (val.length > 4) val = val.slice(0, 4);
@@ -10716,15 +10720,10 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Data de Entrega (DD/MM/AAAA) (Opcional)</label>
-                    <input 
-                      type="text" 
-                      className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-800/40"
-                      value={editOrderForm.pickupDate || ''}
-                      onChange={e => {
-                        const masked = handleDateMask(e.target.value);
-                        setEditOrderForm({...editOrderForm, pickupDate: masked});
-                      }}
+                    <BRDatePicker
                       placeholder="DD/MM/AAAA"
+                      value={editOrderForm.pickupDate || ''}
+                      onChange={val => setEditOrderForm({ ...editOrderForm, pickupDate: val })}
                     />
                   </div>
                   <div className="space-y-2">
@@ -11195,10 +11194,10 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Aniversário (MM/DD)</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Aniversário (DD/MM)</label>
                     <input 
                       type="text" 
-                      placeholder="MM/DD"
+                      placeholder="DD/MM"
                       className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-800/40 focus:border-amber-800"
                       value={manualOrderForm.birthday || ''}
                       onChange={e => {
@@ -11227,7 +11226,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                           : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
                       )}
                     >
-                      <span>Entrega (Delivery)</span>
+                      <span>Entrega</span>
                     </button>
                     <button
                       type="button"
@@ -11247,27 +11246,22 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                 {/* Bloco de Endereço (somente 1 bloco, exibido quando for Entrega) */}
                 {manualOrderForm.deliveryOption === 'delivery' ? (
                   <div className="space-y-4 p-4 bg-amber-50/40 rounded-2xl border border-amber-200/70">
-                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-900">
-                      <Truck size={16} className="text-amber-800" />
-                      <span>Endereço de Entrega</span>
-                    </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="md:col-span-2 space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Rua / Logradouro</label>
+                        <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Endereço completo</label>
                         <input 
                           type="text" 
-                          placeholder="Ex: Rua Bertioga"
+                          placeholder="Ex: 123 Main St"
                           className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-800/40 focus:border-amber-800"
                           value={manualOrderForm.street || ''}
                           onChange={e => setManualOrderForm({...manualOrderForm, street: e.target.value})}
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Número</label>
+                        <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Apt/Unid</label>
                         <input 
                           type="text" 
-                          placeholder="Ex: 999"
+                          placeholder="Ex: Apt 4B"
                           className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-800/40 focus:border-amber-800"
                           value={manualOrderForm.number || ''}
                           onChange={e => setManualOrderForm({...manualOrderForm, number: e.target.value})}
@@ -11277,10 +11271,10 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-gray-700">CEP</label>
+                        <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Zip Code (Opcional)</label>
                         <input 
                           type="text" 
-                          placeholder="13467-570"
+                          placeholder="Ex: 32819"
                           className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 font-mono font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-800/40 focus:border-amber-800"
                           value={manualOrderForm.zipCode || ''}
                           onChange={e => setManualOrderForm({...manualOrderForm, zipCode: e.target.value})}
@@ -11290,7 +11284,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                         <label className="text-xs font-bold uppercase tracking-wider text-gray-700">Cidade / Estado</label>
                         <input 
                           type="text" 
-                          placeholder="Campinas / SP"
+                          placeholder="Ex: Orlando, FL"
                           className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-800/40 focus:border-amber-800"
                           value={manualOrderForm.city || ''}
                           onChange={e => setManualOrderForm({...manualOrderForm, city: e.target.value})}
@@ -11922,7 +11916,7 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
                                 <span>{currencySymbol} {(order.subtotal || (order.total - order.taxAmount)).toFixed(2).replace('.', ',')}</span>
                               </div>
                               <div className="flex justify-between text-amber-900">
-                                <span className="text-gray-500">Sales Tax ({order.taxRate || 8.25}%):</span>
+                                <span className="text-gray-500">Imposto ({order.taxRate || 8.25}%):</span>
                                 <span>+ {currencySymbol} {order.taxAmount.toFixed(2).replace('.', ',')}</span>
                               </div>
                             </div>

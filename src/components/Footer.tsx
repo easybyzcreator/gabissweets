@@ -52,13 +52,13 @@ export default function Footer({
         </a>
       )}
 
-      {/* Developed By - Easy Byz Creator with fixed color #342825 & reduced spacing */}
+      {/* Developed By - Easy Byz Creator */}
       <div className="flex flex-col items-center justify-center">
         <p 
           className="text-[10px] tracking-[0.2em] font-sans font-bold uppercase select-none mb-0.5 leading-none"
           style={{ color: '#342825' }}
         >
-          POWERED BY
+          DESENVOLVIDO POR
         </p>
         <a 
           href="https://easybyzcreator.com/" 
@@ -68,7 +68,7 @@ export default function Footer({
           title="Easy Byz Creator"
         >
           <motion.div
-            className="w-[105px] h-[90px] flex items-center justify-center"
+            className="w-[147px] h-[126px] flex items-center justify-center"
             initial={{ scale: 0.95 }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -77,7 +77,7 @@ export default function Footer({
             <div 
               className="w-full h-full"
               style={{
-                backgroundColor: '#342825',
+                backgroundColor: activeColor,
                 WebkitMaskImage: 'url(https://i.ibb.co/Kj1CTDrD/patitour-2026-04-11-T125246-010.png)',
                 WebkitMaskSize: 'contain',
                 WebkitMaskRepeat: 'no-repeat',

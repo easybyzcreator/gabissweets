@@ -1,34 +1,43 @@
 {
+  "id": "/",
   "name": "Gabi´s sweets",
-  "short_name": "Gabi´s sweets",
+  "short_name": "Gabi's Sweet",
+  "lang": "pt-BR",
+  "scope": "/",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#865d39",
   "icons": [
     {
-      "src": "https://i.ibb.co/TqdtdsC8/Whats-App-Image-2026-10-112-at-5-43-28-PM.jpg",
-      "sizes": "192x192 512x512 640x640",
-      "type": "image/jpeg",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/pwa-icon.jpg",
-      "sizes": "192x192 512x512 640x640",
-      "type": "image/jpeg",
-      "purpose": "any maskable"
+      "src": "https://raw.githubusercontent.com/easybyzcreator/imagens/c0a4d31d6e45e9b8a82d87e8535bfe3d5ecfa656/gabis%20sweets.png",
+      "sizes": "1080x1080",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

@@ -19,11 +19,11 @@ interface Props {
 export const ConsumptionInstructionsModal: React.FC<Props> = ({
   isOpen,
   onClose,
-  brandName = 'Andréia Cakes',
+  brandName = "Gabi's Sweets",
   initialItem = null
 }) => {
   const [selectedId, setSelectedId] = useState<InstructionId | null>(initialItem);
-  const [lang, setLang] = useState<InstructionLang>('en');
+  const [lang, setLang] = useState<InstructionLang>('pt');
   const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;

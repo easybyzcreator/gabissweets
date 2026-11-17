@@ -19,9 +19,9 @@ export default function App() {
     whatsappCountryCode: '+1',
     slug: 'andreiacakesusa',
     brandName: 'Gabi´s sweets',
-    pwaIcon: 'https://i.ibb.co/TqdtdsC8/Whats-App-Image-2026-10-112-at-5-43-28-PM.jpg',
-    slogan: 'Custom & Artisanal Cakes and Sweets',
-    whatsappClosingMessage: 'Thank you for your order! We will contact you shortly to confirm all details.',
+    pwaIcon: 'https://raw.githubusercontent.com/easybyzcreator/imagens/c0a4d31d6e45e9b8a82d87e8535bfe3d5ecfa656/gabis%20sweets.png',
+    slogan: 'Bolos e Doces Artesanais Personalizados',
+    whatsappClosingMessage: 'Obrigada pelo seu pedido! Entraremos em contato em breve para confirmar todos os detalhes.',
     backgroundImage: 'https://i.ibb.co/X0vYy7L/cakes.png',
     glassColor: 'rgba(255, 255, 255, 0.4)',
     textColor: '#000000',
@@ -32,7 +32,7 @@ export default function App() {
     showDetoxInstructionsButton: false,
     showStorageInstructionsButton: true,
     minOrderValue: 0,
-    language: 'en',
+    language: 'pt',
     currency: 'USD',
     tagTitle: 'ALUNO(A)/MENTORADO(A)',
     tagLogo: 'https://i.ibb.co/1YHhXv0b/patitour-2026-10-13-T110847-317.png',
@@ -41,12 +41,12 @@ export default function App() {
     introTitle: 'Gabi´s sweets',
     introSubtitle: '',
     introDescription: '',
-    introButtonText: 'VIEW OUR MENU',
+    introButtonText: 'VER NOSSO CARDÁPIO',
     introBottomText: '',
     selectorEnabled: false,
     selectorTitle: 'Gabi´s sweets',
     selectorSubtitle: '',
-    catalog1Title: 'Custom Cakes',
+    catalog1Title: 'Bolos Personalizados',
     catalog1Image: '',
     catalog1Desc: '',
     catalog1Slogan: '',
@@ -58,13 +58,13 @@ export default function App() {
     catalog2Active: false,
     catalog3Title: '',
     catalog3Image: '',
-    catalog3Desc: 'Gourmet jars, cakes and delicacies.',
-    catalog3Slogan: 'Delightful artisanal desserts',
+    catalog3Desc: 'Potes gourmet, bolos e delícias artesanais.',
+    catalog3Slogan: 'Doces artesanais feitos com carinho',
     catalog3Active: false,
-    catalog4Title: 'Special Celebrations',
+    catalog4Title: 'Celebrações Especiais',
     catalog4Image: 'https://i.ibb.co/X0vYy7L/cakes.png',
-    catalog4Desc: 'Custom themes and celebration packages.',
-    catalog4Slogan: 'Tailored to your dream party',
+    catalog4Desc: 'Temas personalizados e pacotes para festas.',
+    catalog4Slogan: 'Sob medida para a sua festa dos sonhos',
     catalog4Active: false,
     cakeSizes: [],
     cakeDoughs: [],
@@ -93,17 +93,22 @@ export default function App() {
         if (data.minOrderValue !== undefined && data.minOrderValue !== null) {
           data.minOrderValue = parseMoneyValue(data.minOrderValue);
         }
-        // Ensure strictly US configuration
-        data.language = 'en';
+        // Keep US currency/phone format while displaying the entire app in Portuguese
+        const NEW_PWA_ICON = 'https://raw.githubusercontent.com/easybyzcreator/imagens/c0a4d31d6e45e9b8a82d87e8535bfe3d5ecfa656/gabis%20sweets.png';
+        const hasOldPwaIcon = !data.pwaIcon || data.pwaIcon.includes('Whats-App-Image-2026-10-112-at-5-43-28-PM');
+        const resolvedPwaIcon = hasOldPwaIcon ? NEW_PWA_ICON : data.pwaIcon!;
+
+        data.language = 'pt';
         data.currency = 'USD';
         data.whatsappCountryCode = '+1';
+        data.pwaIcon = resolvedPwaIcon;
         data.cakeSizes = Array.isArray(data.cakeSizes) ? data.cakeSizes : [];
         data.cakeDoughs = Array.isArray(data.cakeDoughs) ? data.cakeDoughs : [];
         data.cakeFillings = Array.isArray(data.cakeFillings) ? data.cakeFillings : [];
         data.cakeFillingsMax = typeof data.cakeFillingsMax === 'number' ? data.cakeFillingsMax : 2;
         data.cakeToppings = Array.isArray(data.cakeToppings) ? data.cakeToppings : [];
         data.cakeToppers = Array.isArray(data.cakeToppers) ? data.cakeToppers : [];
-        setSettings(prev => ({ ...prev, ...data, language: 'en', currency: 'USD', whatsappCountryCode: '+1' }));
+        setSettings(prev => ({ ...prev, ...data, language: 'pt', currency: 'USD', whatsappCountryCode: '+1', pwaIcon: resolvedPwaIcon }));
         setLoading(false);
 
         // Update Page Title
@@ -112,7 +117,7 @@ export default function App() {
         }
 
         // Update PWA Apple Touch Icon and Favicon
-        const currentIconUrl = data.pwaIcon || 'https://i.ibb.co/TqdtdsC8/Whats-App-Image-2026-10-112-at-5-43-28-PM.jpg';
+        const currentIconUrl = resolvedPwaIcon;
         const appleTouchIcon = document.getElementById('apple-touch-icon');
         if (appleTouchIcon) {
           appleTouchIcon.setAttribute('href', currentIconUrl);
@@ -208,7 +213,7 @@ export default function App() {
           <Admin settings={settings} setSettings={setSettings} setIsAdmin={setIsAdmin} />
         ) : (
           <>
-            <Menu settings={{ ...settings, language: 'en', currency: 'USD' }} />
+            <Menu settings={{ ...settings, language: 'pt', currency: 'USD' }} />
             <Footer 
               primaryColor={settings?.primaryColor}
               tagTitle={settings?.tagTitle}

@@ -3,13 +3,13 @@ import { Product, Category, ImageGallery } from '../types';
 export const initialCategories: Category[] = [
   {
     id: "cat_personalized_cakes",
-    title: "Personalized cakes",
+    title: "Bolos Personalizados",
     order: 1,
     catalog: "both"
   },
   {
     id: "cat_sweets_truffles",
-    title: "Artisanal Sweets & Truffles",
+    title: "Doces & Trufas Artesanais",
     order: 2,
     catalog: "both"
   }
@@ -18,7 +18,7 @@ export const initialCategories: Category[] = [
 export const initialGalleries: ImageGallery[] = [
   {
     id: "gal_15th_birthday",
-    title: "15th Birthday Cake.",
+    title: "Bolo de 15 Anos",
     images: [
       "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&auto=format&fit=crop&q=80",
       "https://images.unsplash.com/photo-1535141192574-5d4897c13136?w=800&auto=format&fit=crop&q=80",
@@ -30,7 +30,7 @@ export const initialGalleries: ImageGallery[] = [
   },
   {
     id: "gal_birthday_cake",
-    title: "Birthday Cake.",
+    title: "Bolo de Aniversário",
     images: [
       "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=800&auto=format&fit=crop&q=80",
       "https://images.unsplash.com/photo-1535141192574-5d4897c13136?w=800&auto=format&fit=crop&q=80",
@@ -42,7 +42,7 @@ export const initialGalleries: ImageGallery[] = [
   },
   {
     id: "gal_birthday_girls",
-    title: "Birthday Cake For Girls.",
+    title: "Bolo de Aniversário Feminino",
     images: [
       "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=800&auto=format&fit=crop&q=80",
       "https://images.unsplash.com/photo-1576618148400-f54bed99fcfd?w=800&auto=format&fit=crop&q=80",
@@ -54,7 +54,7 @@ export const initialGalleries: ImageGallery[] = [
   },
   {
     id: "gal_birthday_boys",
-    title: "Birthday Cake For Boys.",
+    title: "Bolo de Aniversário Masculino",
     images: [
       "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=800&auto=format&fit=crop&q=80",
       "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&auto=format&fit=crop&q=80",

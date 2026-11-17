@@ -22,7 +22,7 @@ export const SendInstructionToCustomerModal: React.FC<Props> = ({
   isOpen,
   onClose,
   order,
-  brandName = 'Andréia Cakes',
+  brandName = "Gabi's Sweets",
   countryCode = '+1'
 }) => {
   const [selectedInstruction, setSelectedInstruction] = useState<InstructionId>('cake');

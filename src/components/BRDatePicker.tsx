@@ -4,13 +4,16 @@ import { cn } from '../lib/utils';
 
 interface BRDatePickerProps {
   value: string; // "DD/MM/AAAA" or "AAAA-MM-DD" or empty
-  onChange: (formattedDateBR: string) => void;
+  onChange: (formattedDate: string) => void;
   placeholder?: string;
   className?: string;
+  inputClassName?: string;
   primaryColor?: string;
   minDate?: Date;
   maxDate?: Date;
   disablePast?: boolean;
+  outputFormat?: 'br' | 'iso';
+  compact?: boolean;
   id?: string;
 }
 
@@ -21,15 +24,39 @@ const MONTH_NAMES_PT = [
 
 const WEEKDAYS_SHORT_PT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
+const toDisplayBR = (val: string): string => {
+  if (!val) return '';
+  if (val.includes('-')) {
+    const parts = val.split('-');
+    if (parts.length === 3 && parts[0].length === 4) {
+      return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
+    }
+  }
+  return val;
+};
+
+const toIsoYMD = (br: string): string => {
+  const parts = br.split('/');
+  if (parts.length !== 3) return '';
+  const d = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  const y = parseInt(parts[2], 10);
+  if (!d || !m || !y || m < 1 || m > 12 || d < 1 || d > 31 || parts[2].length !== 4) return '';
+  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+};
+
 export default function BRDatePicker({
   value,
   onChange,
   placeholder = 'DD/MM/AAAA',
   className,
+  inputClassName,
   primaryColor = '#000000',
   minDate,
   maxDate,
   disablePast = false,
+  outputFormat = 'br',
+  compact = false,
   id = 'br-datepicker'
 }: BRDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -48,21 +75,19 @@ export default function BRDatePicker({
   }, [minDate, disablePast]);
 
   // Normalize incoming value to DD/MM/AAAA for display and input
-  const displayValue = React.useMemo(() => {
-    if (!value) return '';
-    if (value.includes('-')) {
-      const parts = value.split('-');
-      if (parts.length === 3) {
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
-      }
-    }
-    return value;
-  }, [value]);
+  const normalizedValueBR = React.useMemo(() => toDisplayBR(value), [value]);
+  const [inputText, setInputText] = useState<string>(normalizedValueBR);
+
+  useEffect(() => {
+    setInputText(normalizedValueBR);
+  }, [normalizedValueBR]);
+
+  const displayValue = outputFormat === 'iso' ? inputText : normalizedValueBR;
 
   // Current calendar viewing month and year
   const [viewDate, setViewDate] = useState<Date>(() => {
-    if (displayValue && displayValue.length === 10) {
-      const parts = displayValue.split('/');
+    if (normalizedValueBR && normalizedValueBR.length === 10) {
+      const parts = normalizedValueBR.split('/');
       if (parts.length === 3) {
         const d = parseInt(parts[0], 10);
         const m = parseInt(parts[1], 10) - 1;
@@ -90,6 +115,20 @@ export default function BRDatePicker({
     };
   }, [isOpen]);
 
+  const emitDate = (brFormatted: string) => {
+    setInputText(brFormatted);
+    if (outputFormat === 'iso') {
+      if (!brFormatted) {
+        onChange('');
+      } else if (brFormatted.length === 10) {
+        const iso = toIsoYMD(brFormatted);
+        if (iso) onChange(iso);
+      }
+    } else {
+      onChange(brFormatted);
+    }
+  };
+
   // Handle typing inside text input with auto mask DD/MM/AAAA
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value.replace(/\D/g, '');
@@ -100,7 +139,7 @@ export default function BRDatePicker({
     } else if (val.length > 2) {
       formatted = val.slice(0, 2) + '/' + val.slice(2);
     }
-    onChange(formatted);
+    emitDate(formatted);
 
     // If fully filled DD/MM/AAAA, update viewDate
     if (formatted.length === 10) {
@@ -148,11 +187,14 @@ export default function BRDatePicker({
     const today = new Date();
     const todayStrBR = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
 
+    const formatDateBR = (d: Date) =>
+      `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+
     // Prev month days
     for (let i = firstDayIndex - 1; i >= 0; i--) {
       const dayNum = daysInPrevMonth - i;
       const d = new Date(year, month - 1, dayNum);
-      const dStr = `${String(dayNum).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+      const dStr = formatDateBR(d);
       days.push({
         date: d,
         isCurrentMonth: false,
@@ -167,7 +209,7 @@ export default function BRDatePicker({
     // Current month days
     for (let i = 1; i <= daysInMonth; i++) {
       const d = new Date(year, month, i);
-      const dStr = `${String(i).padStart(2, '0')}/${String(month + 1).padStart(2, '0')}/${year}`;
+      const dStr = formatDateBR(d);
       days.push({
         date: d,
         isCurrentMonth: true,
@@ -183,7 +225,7 @@ export default function BRDatePicker({
     const remaining = 42 - days.length;
     for (let i = 1; i <= remaining; i++) {
       const d = new Date(year, month + 1, i);
-      const dStr = `${String(i).padStart(2, '0')}/${String(month + 2).padStart(2, '0')}/${year}`;
+      const dStr = formatDateBR(d);
       days.push({
         date: d,
         isCurrentMonth: false,
@@ -200,7 +242,7 @@ export default function BRDatePicker({
 
   const handleSelectDay = (dateStrBR: string, isDisabled?: boolean) => {
     if (isDisabled) return;
-    onChange(dateStrBR);
+    emitDate(dateStrBR);
     setIsOpen(false);
   };
 
@@ -219,16 +261,18 @@ export default function BRDatePicker({
     const now = new Date();
     const todayStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
     setViewDate(new Date(now.getFullYear(), now.getMonth(), 1));
-    onChange(todayStr);
+    emitDate(todayStr);
     setIsOpen(false);
   };
 
   return (
-    <div ref={containerRef} className="relative w-full" id={id}>
+    <div ref={containerRef} className={cn("relative", compact ? "w-auto" : "w-full")} id={id}>
       <div 
         onClick={() => setIsOpen(true)}
         className={cn(
-          "w-full flex items-center justify-between p-3 rounded-xl border border-gray-300 bg-white transition-all cursor-pointer focus-within:ring-2 focus-within:border-black",
+          compact
+            ? "flex items-center justify-between px-2.5 py-1.5 rounded-xl border border-gray-300 bg-white transition-all cursor-pointer focus-within:ring-2 focus-within:border-black"
+            : "w-full flex items-center justify-between p-3 rounded-xl border border-gray-300 bg-white transition-all cursor-pointer focus-within:ring-2 focus-within:border-black",
           className
         )}
       >
@@ -241,21 +285,25 @@ export default function BRDatePicker({
             e.stopPropagation();
             setIsOpen(true);
           }}
-          className="w-full bg-transparent outline-none text-black font-semibold placeholder:text-gray-400 text-sm"
+          className={cn(
+            "w-full bg-transparent outline-none text-black font-semibold placeholder:text-gray-400",
+            compact ? "text-xs w-24" : "text-sm",
+            inputClassName
+          )}
         />
 
-        <div className="flex items-center gap-1 pl-2 text-gray-500">
+        <div className={cn("flex items-center gap-0.5 text-gray-500 shrink-0", compact ? "pl-1" : "pl-2")}>
           {displayValue && (
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                onChange('');
+                emitDate('');
               }}
-              className="p-1 hover:text-red-500 rounded-full transition-colors"
+              className="p-0.5 hover:text-red-500 rounded-full transition-colors"
               title="Limpar data"
             >
-              <X size={14} />
+              <X size={compact ? 12 : 14} />
             </button>
           )}
           <button
@@ -264,17 +312,17 @@ export default function BRDatePicker({
               e.stopPropagation();
               setIsOpen(!isOpen);
             }}
-            className="p-1 text-gray-700 hover:text-black transition-colors"
+            className="p-0.5 text-gray-700 hover:text-black transition-colors"
             title="Abrir calendário"
           >
-            <CalendarIcon size={18} />
+            <CalendarIcon size={compact ? 15 : 18} />
           </button>
         </div>
       </div>
 
       {/* Calendar Popover */}
       {isOpen && (
-        <div className="absolute z-50 mt-2 left-0 right-0 sm:right-auto sm:w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute z-50 mt-2 left-0 w-72 sm:w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 animate-in fade-in zoom-in-95 duration-150">
           {/* Header */}
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100">
             <div className="font-bold text-sm text-gray-900 font-sans">

@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { initialProducts, initialCategories, DEFAULT_CAKE_CONFIG } from '../data/defaultCatalog';
 import { parseMoneyValue } from '../lib/money';
 import { ConsumptionInstructionsModal } from './ConsumptionInstructionsModal';
+import BRDatePicker from './BRDatePicker';
 
 const translations = {
   pt: {
@@ -21,10 +22,10 @@ const translations = {
     fullName: 'Nome Completo',
     phone: 'Telefone',
     email: 'E-mail',
-    birthday: 'Aniversário (MM/DD)',
-    birthdayPlaceholder: 'MM/DD',
-    street: 'Rua/Avenida',
-    number: 'Nº/Apto',
+    birthday: 'Aniversário (DD/MM)',
+    birthdayPlaceholder: 'DD/MM',
+    street: 'Endereço completo',
+    number: 'Apt/Unid',
     zipCode: 'Zip Code',
     city: 'Cidade',
     state: 'Estado',
@@ -47,7 +48,7 @@ const translations = {
     whatsappDate: 'Data',
     whatsappAt: 'às',
     pickupDate: 'Data de Entrega/Retirada',
-    pickupDatePlaceholder: 'MM/DD/AAAA',
+    pickupDatePlaceholder: 'DD/MM/AAAA',
     consultMessage: 'Existem itens no pedido com valores a consultar. Aguarde a confirmação pelo WhatsApp.'
   },
   en: {
@@ -60,8 +61,8 @@ const translations = {
     fullName: 'Full Name',
     phone: 'Phone',
     email: 'E-mail',
-    birthday: 'Birthday (MM/DD)',
-    birthdayPlaceholder: 'MM/DD',
+    birthday: 'Birthday (DD/MM)',
+    birthdayPlaceholder: 'DD/MM',
     street: 'Street/Avenue',
     number: 'No./Apt',
     zipCode: 'Zip Code',
@@ -86,7 +87,7 @@ const translations = {
     whatsappDate: 'Date',
     whatsappAt: 'at',
     pickupDate: 'Pickup/Delivery Date',
-    pickupDatePlaceholder: 'MM/DD/YYYY',
+    pickupDatePlaceholder: 'DD/MM/YYYY',
     consultMessage: 'There are items with values to be consulted. Please wait for confirmation via WhatsApp.'
   }
 };
@@ -358,21 +359,21 @@ export const getResolvedBoxFlavors = (
   return [];
 };
 
-const translateSettingsToEnglish = (s: Settings): Settings => {
+const normalizeSettingsForMenu = (s: Settings): Settings => {
   return {
     ...s,
-    language: 'en',
+    language: 'pt',
     currency: 'USD',
     brandName: s.brandName || 'Gabi´s sweets',
     slogan: typeof s.slogan === 'string' ? s.slogan : '',
     introTitle: s.introTitle || s.brandName || 'Gabi´s sweets',
     introSubtitle: typeof s.introSubtitle === 'string' ? s.introSubtitle : '',
     introDescription: typeof s.introDescription === 'string' ? s.introDescription : '',
-    introButtonText: s.introButtonText || 'VIEW OUR MENU',
+    introButtonText: s.introButtonText || 'VER NOSSO CARDÁPIO',
     introBottomText: typeof s.introBottomText === 'string' ? s.introBottomText : '',
     selectorTitle: s.selectorTitle || s.brandName || 'Gabi´s sweets',
     selectorSubtitle: typeof s.selectorSubtitle === 'string' ? s.selectorSubtitle : '',
-    catalog1Title: s.catalog1Title || 'Custom Cakes',
+    catalog1Title: s.catalog1Title || 'Bolos Personalizados',
     catalog1Desc: typeof s.catalog1Desc === 'string' ? s.catalog1Desc : '',
     catalog1Slogan: typeof s.catalog1Slogan === 'string' ? s.catalog1Slogan : '',
     catalog2Title: typeof s.catalog2Title === 'string' ? s.catalog2Title : '',
@@ -384,18 +385,18 @@ const translateSettingsToEnglish = (s: Settings): Settings => {
     catalog4Title: typeof s.catalog4Title === 'string' ? s.catalog4Title : '',
     catalog4Desc: typeof s.catalog4Desc === 'string' ? s.catalog4Desc : '',
     catalog4Slogan: typeof s.catalog4Slogan === 'string' ? s.catalog4Slogan : '',
-    checkoutTitle: s.checkoutTitle || 'We are very happy with your order! Please review the details below.',
-    infoBlock1Title: s.infoBlock1Title || 'ORDER CONFIRMATION',
-    infoBlock1Text: s.infoBlock1Text || 'After sending your request, we will contact you on WhatsApp to confirm details.',
-    infoBlock2Title: s.infoBlock2Title || 'STORE PICK UP',
-    infoBlock2Text: s.infoBlock2Text || 'Check our pickup hours and address details on the final confirmation.',
-    whatsappClosingMessage: s.whatsappClosingMessage || 'Thank you for your order, we will contact you shortly for confirmation!'
+    checkoutTitle: s.checkoutTitle || 'Ficamos muito felizes com o seu pedido! Confira os detalhes abaixo.',
+    infoBlock1Title: typeof s.infoBlock1Title === 'string' ? s.infoBlock1Title : '',
+    infoBlock1Text: typeof s.infoBlock1Text === 'string' ? s.infoBlock1Text : '',
+    infoBlock2Title: typeof s.infoBlock2Title === 'string' ? s.infoBlock2Title : '',
+    infoBlock2Text: typeof s.infoBlock2Text === 'string' ? s.infoBlock2Text : '',
+    whatsappClosingMessage: s.whatsappClosingMessage || 'Obrigada pelo pedido! Em breve entraremos em contato para confirmar.'
   };
 };
 
 export default function Menu({ settings: initialSettings }: { settings: Settings }) {
-  const settings = translateSettingsToEnglish(initialSettings || {} as Settings);
-  const t = translations['en'];
+  const settings = normalizeSettingsForMenu(initialSettings || {} as Settings);
+  const t = translations['pt'];
   const currencySymbol = settings.currency === 'BRL' ? 'R$ ' : '$';
 
   const renderTitle = (title: string) => {
@@ -414,34 +415,34 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
   };
 
   const DEFAULT_CAKE_SIZES = [
-    '7" - 15 to 20 Slices (Approx. 1.5kg)',
-    '9" - 25 to 30 Slices (Approx. 2.5kg)',
-    '12" - 40 to 50 Slices (Approx. 4.0kg)'
+    '7" - 15 a 20 Fatias (Aprox. 1,5kg)',
+    '9" - 25 a 30 Fatias (Aprox. 2,5kg)',
+    '12" - 40 a 50 Fatias (Aprox. 4,0kg)'
   ];
 
   const DEFAULT_CAKE_DOUGHS = [
-    'Vanilla Dough',
-    'Chocolate 50% Cocoa Dough',
-    'Red Velvet Dough'
+    'Massa de Baunilha',
+    'Massa de Chocolate 50% Cacau',
+    'Massa Red Velvet'
   ];
 
   const DEFAULT_CAKE_FILLINGS = [
-    'Belgian Chocolate Brigadeiro',
-    'Traditional Coconut Cream',
-    'Traditional Dulce de Leche',
-    'Sweet Milk Cream with Berries'
+    'Brigadeiro Belga',
+    'Beijinho Tradicional',
+    'Doce de Leite Tradicional',
+    'Creme de Ninho com Morangos'
   ];
 
   const DEFAULT_CAKE_TOPPINGS = [
-    'Belgian Chocolate Ganache',
-    'Classic Buttercream',
-    'Creamy Whipped Frosting'
+    'Ganache de Chocolate Belga',
+    'Buttercream Clássico',
+    'Chantininho Cremoso'
   ];
 
   const DEFAULT_CAKE_TOPPERS = [
-    'None',
-    'Happy Birthday',
-    'Congratulations'
+    'Nenhum',
+    'Feliz Aniversário',
+    'Parabéns'
   ];
 
   const cakeSizesList = sortAlphabetically(settings.cakeSizes || []);
@@ -606,19 +607,8 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
     neighborhood: '',
     customNeighborhood: '',
     scheduledDate: '',
-    scheduledTime: '10:00 AM'
+    scheduledTime: ''
   });
-
-  const [deliveryHour, setDeliveryHour] = useState('10');
-  const [deliveryMinute, setDeliveryMinute] = useState('00');
-  const [deliveryPeriod, setDeliveryPeriod] = useState<'AM' | 'PM'>('AM');
-
-  useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
-      scheduledTime: `${deliveryHour}:${deliveryMinute} ${deliveryPeriod}`
-    }));
-  }, [deliveryHour, deliveryMinute, deliveryPeriod]);
 
   const [activeScreen, setActiveScreen] = useState<'intro' | 'selector' | 'menu'>(() => {
     if (settings.introEnabled !== false) return 'intro';
@@ -831,22 +821,22 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
         .filter(item => item.productId === product.id && item.selectedSize?.id === selectedSize.id)
         .reduce((sum, item) => sum + item.quantity, 0);
       if (selectedSize.stockQuantity <= 0) {
-        toast.error(`Sorry, size ${selectedSize.name} is currently sold out!`);
+        toast.error(`Desculpe, o tamanho ${selectedSize.name} está esgotado no momento!`);
         return;
       }
       if (currentInCartForSize + customQty > selectedSize.stockQuantity) {
-        toast.error(`Maximum quantity available for ${selectedSize.name} reached! (${Math.max(0, selectedSize.stockQuantity - currentInCartForSize)} remaining)`);
+        toast.error(`Quantidade máxima disponível para ${selectedSize.name} atingida! (${Math.max(0, selectedSize.stockQuantity - currentInCartForSize)} restante(s))`);
         return;
       }
     } else if (product.trackStock) {
       const currentInCart = cart.filter(item => item.productId === product.id).reduce((sum, item) => sum + item.quantity, 0);
       const maxStock = Number(product.stockQuantity ?? 0);
       if (maxStock <= 0) {
-        toast.error('Sorry, this item is currently sold out!');
+        toast.error('Desculpe, este item está esgotado no momento!');
         return;
       }
       if (currentInCart + customQty > maxStock) {
-        toast.error(`Maximum quantity available in stock reached! (${Math.max(0, maxStock - currentInCart)} remaining)`);
+        toast.error(`Quantidade máxima disponível em estoque atingida! (${Math.max(0, maxStock - currentInCart)} restante(s))`);
         return;
       }
     }
@@ -926,18 +916,18 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
         .filter(item => item.productId === product.id && item.selectedSize?.id === size.id)
         .reduce((sum, item) => sum + item.quantity, 0);
       if (size.stockQuantity <= 0) {
-        toast.error(`Sorry, size ${size.name} is currently sold out!`);
+        toast.error(`Desculpe, o tamanho ${size.name} está esgotado no momento!`);
         return;
       }
       if (currentInCartForSize + 1 > size.stockQuantity) {
-        toast.error(`Maximum quantity available for ${size.name} reached! (${Math.max(0, size.stockQuantity - currentInCartForSize)} remaining)`);
+        toast.error(`Quantidade máxima disponível para ${size.name} atingida! (${Math.max(0, size.stockQuantity - currentInCartForSize)} restante(s))`);
         return;
       }
     } else if (product.trackStock) {
       const currentInCart = cart.filter(item => item.productId === product.id).reduce((sum, item) => sum + item.quantity, 0);
       const maxStock = Number(product.stockQuantity ?? 0);
       if (currentInCart + 1 > maxStock) {
-        toast.error('Maximum quantity available in stock reached!');
+        toast.error('Quantidade máxima disponível em estoque atingida!');
         return;
       }
     }
@@ -980,7 +970,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
         .map(([name, qty]) => ({ name, qty }));
 
       if (activeFillings.length === 0) {
-        toast.error('Choose at least 1 option!');
+        toast.error('Escolha pelo menos 1 opção!');
         return;
       }
 
@@ -1026,7 +1016,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
     if (selectedProductForCustom.isCustomCake) {
       const maxFillings = settings.cakeFillingsMax || 2;
       if (selectedFillings.length > maxFillings) {
-        toast.error(`Choose at most ${maxFillings} fillings!`);
+        toast.error(`Escolha no máximo ${maxFillings} recheios!`);
         return;
       }
       
@@ -1127,11 +1117,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       const currentInCart = cart.filter(item => item.productId === product.id).reduce((sum, item) => sum + item.quantity, 0);
       const maxStock = Number(product.stockQuantity ?? 0);
       if (maxStock <= 0) {
-        toast.error('Sorry, this item is currently sold out!');
+        toast.error('Desculpe, este item está esgotado no momento!');
         return;
       }
       if (currentInCart + customItemQuantity > maxStock) {
-        toast.error(`Maximum available in stock reached! (${Math.max(0, maxStock - currentInCart)} remaining)`);
+        toast.error(`Quantidade máxima disponível em estoque atingida! (${Math.max(0, maxStock - currentInCart)} restante(s))`);
         return;
       }
     }
@@ -1143,19 +1133,19 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       const hasFlavors = Boolean(product.cupcakeFlavors && product.cupcakeFlavors.length > 0);
 
       if (hasDoughs && !selectedCupcakeDough) {
-        toast.error('Please select a batter / dough flavor!');
+        toast.error('Por favor, selecione o sabor da massa!');
         return;
       }
       if (hasFillings && !selectedCupcakeFilling) {
-        toast.error('Please select a filling option!');
+        toast.error('Por favor, selecione uma opção de recheio!');
         return;
       }
       if (hasFrostings && !selectedCupcakeFrosting) {
-        toast.error('Please select a frosting / topping flavor!');
+        toast.error('Por favor, selecione uma opção de cobertura!');
         return;
       }
       if (hasFlavors && !selectedCupcakeFlavor) {
-        toast.error('Please select a flavor!');
+        toast.error('Por favor, selecione um sabor!');
         return;
       }
 
@@ -1200,7 +1190,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       setSelectedCupcakeFilling('');
       setSelectedCupcakeFrosting('');
       setSelectedCupcakeFlavor('');
-      toast.success('Added to cart!');
+      toast.success('Adicionado ao carrinho!');
       return;
     }
 
@@ -1218,7 +1208,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
 
       const totalUnits = selectedFlavors.reduce((sum, f) => sum + f.quantity, 0);
       if (totalUnits !== capacity) {
-        toast.error(`Please select exactly ${capacity} items for this box! (${totalUnits} currently selected)`);
+        toast.error(`Por favor, selecione exatamente ${capacity} itens para esta caixa! (${totalUnits} selecionados)`);
         return;
       }
 
@@ -1242,7 +1232,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
 
       setSelectedProductForDetails(null);
       setBoxFlavorQuantities({});
-      toast.success('Box successfully added to your order!');
+      toast.success('Caixa adicionada ao seu pedido!');
       return;
     }
 
@@ -1252,7 +1242,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
         .map(([name, qty]) => ({ name, qty }));
 
       if (activeFillings.length === 0) {
-        toast.error('Choose at least 1 option!');
+        toast.error('Escolha pelo menos 1 opção!');
         return;
       }
 
@@ -1292,14 +1282,14 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       setSelectedProductForDetails(null);
       setSelectedSize(null);
       setSelectedSandwichFillings([]);
-      toast.success('Successfully added to your order!');
+      toast.success('Adicionado ao seu pedido!');
       return;
     }
 
     if (product.isCustomCake) {
       const maxFillings = settings.cakeFillingsMax || 2;
       if (selectedFillings.length > maxFillings) {
-        toast.error(`Choose at most ${maxFillings} fillings!`);
+        toast.error(`Escolha no máximo ${maxFillings} recheios!`);
         return;
       }
       
@@ -1344,7 +1334,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       });
 
       setSelectedProductForDetails(null);
-      toast.success('Successfully added to your order!');
+      toast.success('Adicionado ao seu pedido!');
       return;
     }
     
@@ -1391,7 +1381,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
 
     setSelectedProductForDetails(null);
     setSelectedSize(null);
-    toast.success('Successfully added to your order!');
+    toast.success('Adicionado ao seu pedido!');
   };
 
   const handleAddComboToCart = () => {
@@ -1400,7 +1390,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
     const currentTotal = (Object.values(comboDishSelections) as number[]).reduce((a, b) => a + b, 0);
 
     if (currentTotal !== targetQty) {
-      toast.error(`Please select exactly ${targetQty} items to complete the combo. You selected ${currentTotal}.`);
+      toast.error(`Por favor, selecione exatamente ${targetQty} itens para completar o combo. Você selecionou ${currentTotal}.`);
       return;
     }
 
@@ -1429,7 +1419,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
 
     setSelectedComboProduct(null);
     setComboDishSelections({});
-    toast.success('Combo successfully added to your order!');
+    toast.success('Combo adicionado ao seu pedido!');
   };
 
   const removeFromCart = (cartItemId: string) => {
@@ -1472,7 +1462,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       const diff = minVal - cartTotal;
       return {
         isValid: false,
-        message: `The minimum order amount is ${currencySymbol}${minVal.toFixed(2)}. Still needed: ${currencySymbol}${diff.toFixed(2)}!`
+        message: `O valor mínimo do pedido é ${currencySymbol}${minVal.toFixed(2)}. Faltam: ${currencySymbol}${diff.toFixed(2)}!`
       };
     }
     return { isValid: true, message: '' };
@@ -1487,11 +1477,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
   }, [cartTotal, settings?.minOrderValue, checkoutStep]);
 
   const handleSendCustomDietWhatsApp = () => {
-    const brand = settings.brandName || 'team';
-    const msg = `Hello ${brand}, I am browsing your menu and would like to place a custom order, can you help me?`;
+    const brand = settings.brandName || 'equipe';
+    const msg = `Olá ${brand}, estou vendo o cardápio e gostaria de fazer um pedido personalizado, pode me ajudar?`;
     const cleanPhone = getCleanWhatsAppPhone(settings.whatsappNumber || '', settings.whatsappCountryCode || '+1');
     if (!cleanPhone) {
-      toast.error('WhatsApp phone number not configured in the Admin panel.');
+      toast.error('Número do WhatsApp não configurado no painel administrativo.');
       return;
     }
     const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -1506,7 +1496,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
     if (isSubmitting) return;
 
     if (cart.length === 0) {
-      toast.error(settings.language === 'en' ? 'Your cart is empty!' : 'Seu carrinho está vazio!');
+      toast.error('Seu carrinho está vazio!');
       return;
     }
 
@@ -1517,84 +1507,46 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       return;
     }
 
-    // Required fields validation
+    // Validação dos campos obrigatórios
     if (!formData.nome.trim()) {
-      toast.error('Full Name is required!');
+      toast.error('Nome Completo é obrigatório!');
       return;
     }
     if (!formData.telefone.trim()) {
-      toast.error('Phone number is required!');
+      toast.error('Telefone é obrigatório!');
       return;
     }
     const phoneDigits = formData.telefone.replace(/\D/g, '');
     if (phoneDigits.length < 10) {
-      toast.error('Please enter a valid phone number with area code!');
+      toast.error('Informe um telefone válido com DDD/código de área!');
       return;
     }
     if (!formData.aniversario.trim()) {
-      toast.error('Birthday is required!');
+      toast.error('Aniversário é obrigatório!');
       return;
     }
     if (!/^\d{2}\/\d{2}$/.test(formData.aniversario.trim())) {
-      toast.error('Please enter birthday in MM/DD format!');
+      toast.error('Informe o aniversário no formato DD/MM!');
       return;
     }
-    const [bMonthStr, bDayStr] = formData.aniversario.trim().split('/');
-    const bMonth = parseInt(bMonthStr, 10);
+    const [bDayStr, bMonthStr] = formData.aniversario.trim().split('/');
     const bDay = parseInt(bDayStr, 10);
-    if (bMonth < 1 || bMonth > 12 || bDay < 1 || bDay > 31) {
-      toast.error('Please enter a valid date in MM/DD format (Month/Day)!');
+    const bMonth = parseInt(bMonthStr, 10);
+    if (bDay < 1 || bDay > 31 || bMonth < 1 || bMonth > 12) {
+      toast.error('Informe uma data válida no formato DD/MM (Dia/Mês)!');
+      return;
+    }
+    if (!formData.street.trim()) {
+      toast.error('Endereço completo é obrigatório!');
+      return;
+    }
+    if (!formData.city.trim()) {
+      toast.error('Cidade é obrigatória!');
       return;
     }
 
-    // Delivery Neighborhood Validation
-    const isDelivery = formData.deliveryOption === 'delivery';
-    let deliveryFee = 0;
-    let neighborhoodName = '';
-
-    if (isDelivery) {
-      if (!formData.neighborhood) {
-        toast.error('Please select your delivery zone / neighborhood!');
-        return;
-      }
-      if (formData.neighborhood === 'Outro') {
-        if (!formData.customNeighborhood?.trim()) {
-          toast.error('Please specify your delivery zone or region!');
-          return;
-        }
-        neighborhoodName = `Other (${formData.customNeighborhood.trim()})`;
-        deliveryFee = 0;
-      } else {
-        const found = (settings.deliveryNeighborhoods || []).find(n => n.name === formData.neighborhood);
-        deliveryFee = found ? Number(found.fee || 0) : 0;
-        neighborhoodName = formData.neighborhood;
-      }
-    } else {
-      neighborhoodName = 'Store Pick Up';
-      deliveryFee = 0;
-    }
-
-    if (isDelivery) {
-      if (!formData.neighborhood) {
-        toast.error('Please select your delivery city!');
-        return;
-      }
-      if (!formData.street.trim()) {
-        toast.error('Street/Avenue is required!');
-        return;
-      }
-      if (!formData.zipCode?.trim()) {
-        toast.error('Zip Code is required!');
-        return;
-      }
-    }
-
-    if (!formData.scheduledDate?.trim()) {
-      toast.error(formData.deliveryOption === 'delivery' 
-        ? 'Please select the delivery date!' 
-        : 'Please select the pick up date!');
-      return;
-    }
+    const deliveryFee = 0;
+    const neighborhoodName = '';
 
     const validation = validateCartItems();
     if (!validation.isValid) {
@@ -1655,37 +1607,26 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       const calculatedTax = 0;
       const finalTotalWithDelivery = cartTotal + deliveryFee;
 
-      const formattedDateOnly = formData.scheduledDate
-        ? (formData.scheduledDate.includes('-')
-            ? (() => {
-                const parts = formData.scheduledDate.split('-');
-                if (parts.length === 3) {
-                  return `${parts[1]}/${parts[2]}/${parts[0]}`;
-                }
-                return formData.scheduledDate;
-              })()
-            : formData.scheduledDate)
-        : '';
-
-      const finalSelectedTime = formData.scheduledTime || `${deliveryHour}:${deliveryMinute} ${deliveryPeriod}`;
-
-      const formattedPickupDate = formattedDateOnly 
-        ? `${formattedDateOnly} at ${finalSelectedTime} (${formData.deliveryOption === 'delivery' ? 'DELIVERY' : 'PICK UP'})` 
-        : '';
+      const formattedDateOnly = '';
+      const finalSelectedTime = '';
+      const streetLine = formData.number.trim()
+        ? `${formData.street.trim()}, ${formData.number.trim()}`
+        : formData.street.trim();
+      const stateZip = [formData.state.trim().toUpperCase(), formData.zipCode.trim()].filter(Boolean).join(' ');
+      const fullUSAddress = [streetLine, formData.city.trim(), stateZip].filter(Boolean).join(', ');
+      const formattedPickupDate = '';
 
       const orderData: Omit<Order, 'id'> = {
         customerName: formData.nome,
         phone: formData.telefone,
-        address: isDelivery 
-          ? `${formData.street}, ${formData.number || 'S/N'}${neighborhoodName ? ` - ${neighborhoodName}` : ''}${formData.state?.trim() ? ` / ${formData.state.trim()}` : ''}${formData.zipCode ? ` - ${formData.zipCode}` : ''}`
-          : 'Store Pick Up',
-        street: isDelivery ? formData.street : '',
-        number: isDelivery ? (formData.number || '') : '',
-        zipCode: isDelivery ? (formData.zipCode || '') : '',
-        city: isDelivery ? neighborhoodName : 'Store Pick Up',
-        state: isDelivery ? (formData.state?.trim() || '') : '',
+        address: fullUSAddress,
+        street: formData.street.trim(),
+        number: formData.number.trim(),
+        zipCode: formData.zipCode.trim(),
+        city: formData.city.trim(),
+        state: formData.state.trim().toUpperCase(),
         pickupDate: formattedPickupDate,
-        deliveryOption: formData.deliveryOption || 'delivery',
+        deliveryOption: 'delivery',
         neighborhood: neighborhoodName,
         deliveryNeighborhood: neighborhoodName,
         deliveryFee: deliveryFee,
@@ -1694,14 +1635,14 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
         deliveryStatus: 'pending',
         birthday: formData.aniversario || '',
         observation: formData.observacao || '',
-        email: formData.email || '',
+        email: '',
         items: orderItems,
         total: finalTotalWithDelivery,
         subtotal: cartTotal,
         taxRate: 0,
         taxAmount: 0,
         createdAt: serverTimestamp(),
-        orderLanguage: settings.language || 'pt'
+        orderLanguage: 'pt'
       };
 
       console.log('Finalizando pedido...', orderData);
@@ -1738,8 +1679,8 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       }
       
       const now = new Date();
-      const timeStr = now.toLocaleTimeString(settings.language === 'en' ? 'en-US' : 'pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
-      const dateStr = now.toLocaleDateString(settings.language === 'en' ? 'en-US' : 'pt-BR', { timeZone: 'America/Sao_Paulo' });
+      const timeStr = now.toLocaleTimeString('pt-BR', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit' });
+      const dateStr = now.toLocaleDateString('pt-BR', { timeZone: 'America/New_York' });
 
       let message = `*${t.whatsappOrder} - ${settings.brandName || settings.slug}*\n`;
       message += `*${t.whatsappDate}:* ${dateStr} ${t.whatsappAt} ${timeStr}\n\n`;
@@ -1748,39 +1689,20 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       message += `*${t.fullName}:* ${formData.nome}\n`;
       message += `*${t.phone}:* ${formData.telefone}\n`;
       message += `*${t.birthday}:* ${formData.aniversario}\n`;
-      message += `*${settings.language === 'en' ? 'Order Type' : 'Modalidade'}:* ${formData.deliveryOption === 'delivery' ? (settings.language === 'en' ? 'Delivery (Address)' : 'Entrega (Delivery)') : (settings.language === 'en' ? 'Pick Up' : 'Retirada (Pick Up)')}\n`;
-      if (isDelivery) {
-        message += `*City:* ${neighborhoodName}\n`;
-        message += `*Delivery Fee:* ${deliveryFee > 0 ? `${currencySymbol}${deliveryFee.toFixed(2)}` : (formData.neighborhood === 'Outro' ? 'To be agreed' : 'Free')}\n`;
-        if (formattedDateOnly) {
-          message += `*${settings.language === 'en' ? 'Delivery Date & Time' : 'Data e Horário de Entrega'}:* ${formattedDateOnly} at ${finalSelectedTime}\n`;
-        }
-        message += `*${t.street}:* ${formData.street}\n`;
-        message += `*${t.number}:* ${formData.number || '-'}\n`;
-        if (formData.zipCode) {
-          message += `*Zip Code:* ${formData.zipCode}\n`;
-        }
-        if (formData.state?.trim()) {
-          message += `*${t.state}:* ${formData.state.trim()}\n`;
-        }
-      } else {
-        if (formattedDateOnly) {
-          message += `*${settings.language === 'en' ? 'Pick Up Date & Time' : 'Data e Horário de Retirada'}:* ${formattedDateOnly} at ${finalSelectedTime}\n`;
-        }
-      }
+      message += `*Endereço:* ${fullUSAddress}\n`;
       message += `*${t.observation}:* ${formData.observacao || '-'}\n\n`;
 
       message += `*--- ${t.whatsappItems} ---*\n`;
       orderItems.forEach((item, idx) => {
         const originalItem = cart[idx];
         if (item.priceType === 'consult') {
-          message += `• ${item.quantity}x ${item.title} - (Value to Consult)\n`;
+          message += `• ${item.quantity}x ${item.title} - (A Consultar)\n`;
         } else {
           message += `• ${item.quantity}x ${item.title} - ${currencySymbol}${(item.price * item.quantity).toFixed(2)}\n`;
         }
         if (item.mealOptions) {
           if (item.mealOptions.removals.length > 0) {
-            message += `  (Excluding: ${item.mealOptions.removals.join(', ')})\n`;
+            message += `  (Excluir: ${item.mealOptions.removals.join(', ')})\n`;
           }
           if (item.mealOptions.sides.length > 0) {
             const normalSidesArr = item.mealOptions.sides.filter(s => s.type !== 'swap');
@@ -1789,80 +1711,74 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
             if (normalSidesArr.length > 0) {
               const grouped = normalSidesArr.reduce((acc: Record<string, number>, s) => { acc[s.name] = (acc[s.name] || 0) + 1; return acc; }, {});
               const str = Object.entries(grouped).map(([name, qty]) => `${name}${Number(qty) > 1 ? ` (${qty}x)` : ''}`).join(', ');
-              message += `  (Sides: ${str})\n`;
+              message += `  (Acompanhamentos: ${str})\n`;
             }
             if (swapSidesArr.length > 0) {
               const grouped = swapSidesArr.reduce((acc: Record<string, number>, s) => { acc[s.name] = (acc[s.name] || 0) + 1; return acc; }, {});
               const str = Object.entries(grouped).map(([name, qty]) => `${name}${Number(qty) > 1 ? ` (${qty}x)` : ''}`).join(', ');
-              message += `  (Swaps: ${str})\n`;
+              message += `  (Trocas: ${str})\n`;
             }
           }
         }
         if (originalItem && originalItem.cakeOptions) {
           const opts = originalItem.cakeOptions;
-          if (opts.size) message += `  (Size: ${opts.size})\n`;
-          if (opts.dough) message += `  (Dough: ${opts.dough})\n`;
-          if (opts.fillings && opts.fillings.length > 0) message += `  (Fillings: ${opts.fillings.join(' + ')})\n`;
-          if (opts.topping) message += `  (Topping: ${opts.topping})\n`;
-          if (opts.topper) message += `  (Topper: ${opts.topper})\n`;
-          if (opts.styleNumber) message += `  (Style Reference: Photo #${opts.styleNumber})\n`;
+          if (opts.size) message += `  (Tamanho: ${opts.size})\n`;
+          if (opts.dough) message += `  (Massa: ${opts.dough})\n`;
+          if (opts.fillings && opts.fillings.length > 0) message += `  (Recheios: ${opts.fillings.join(' + ')})\n`;
+          if (opts.topping) message += `  (Cobertura: ${opts.topping})\n`;
+          if (opts.topper) message += `  (Topo do Bolo: ${opts.topper})\n`;
+          if (opts.styleNumber) message += `  (Referência de Estilo: Foto #${opts.styleNumber})\n`;
           if (opts.customStyleDescription) {
-            message += `  (Custom Reference: "${opts.customStyleDescription}")\n`;
-            message += `  (📸 Reference photo will be sent via WhatsApp right after this message)\n`;
+            message += `  (Referência Personalizada: "${opts.customStyleDescription}")\n`;
+            message += `  (📸 A foto de referência será enviada pelo WhatsApp logo após esta mensagem)\n`;
           }
-          if (opts.cakeObservation) message += `  (Cake Notes: "${opts.cakeObservation}")\n`;
+          if (opts.cakeObservation) message += `  (Obs. do Bolo: "${opts.cakeObservation}")\n`;
         }
         if (originalItem && originalItem.cupcakeOptions) {
           const opts = originalItem.cupcakeOptions;
-          if (opts.dough) message += `  (Batter: ${opts.dough})\n`;
-          if (opts.filling) message += `  (Filling: ${opts.filling})\n`;
-          if (opts.frosting) message += `  (Frosting: ${opts.frosting})\n`;
-          if (opts.flavor) message += `  (Flavor: ${opts.flavor})\n`;
+          if (opts.dough) message += `  (Massa: ${opts.dough})\n`;
+          if (opts.filling) message += `  (Recheio: ${opts.filling})\n`;
+          if (opts.frosting) message += `  (Cobertura: ${opts.frosting})\n`;
+          if (opts.flavor) message += `  (Sabor: ${opts.flavor})\n`;
         }
         if (originalItem && originalItem.sandwichOptions) {
           const opts = originalItem.sandwichOptions;
-          if (opts.fillings && opts.fillings.length > 0) message += `  (Selection: ${opts.fillings.join(' + ')})\n`;
+          if (opts.fillings && opts.fillings.length > 0) message += `  (Seleção: ${opts.fillings.join(' + ')})\n`;
         }
         if (originalItem && originalItem.comboOptions?.items && originalItem.comboOptions.items.length > 0) {
-          message += `  (Combo Flavors:\n`;
+          message += `  (Sabores do Combo:\n`;
           originalItem.comboOptions.items.forEach(sub => {
             message += `    • ${sub.quantity}x ${sub.productTitle}\n`;
           });
           message += `  )\n`;
         }
         if (originalItem && originalItem.boxOptions?.flavors && originalItem.boxOptions.flavors.length > 0) {
-          message += `  (Box Selection - ${originalItem.boxOptions.capacity} units:\n`;
+          message += `  (Caixa - ${originalItem.boxOptions.capacity} unidades:\n`;
           originalItem.boxOptions.flavors.forEach(sub => {
-            message += `    • ${sub.quantity}x ${sub.name} ($${Number(sub.unitPrice || 0).toFixed(2)} ea)\n`;
+            message += `    • ${sub.quantity}x ${sub.name} ($${Number(sub.unitPrice || 0).toFixed(2)} un.)\n`;
           });
           message += `  )\n`;
         }
       });
 
       message += `\n*Subtotal:* ${currencySymbol}${cartTotal.toFixed(2)}\n`;
-      if (isDelivery) {
-        message += `*Delivery Fee (${neighborhoodName}):* ${deliveryFee > 0 ? `${currencySymbol}${deliveryFee.toFixed(2)}` : (formData.neighborhood === 'Outro' ? 'To be agreed' : 'Free')}\n`;
-      }
       message += `*${t.whatsappTotal}:* ${currencySymbol}${finalTotalWithDelivery.toFixed(2)}\n`;
       
       if (cart.some(item => item.cakeOptions?.customStyleDescription)) {
-        message += `\n📸 *Important Note:* I have specified a custom cake design reference above and will send the reference photo/image right here in this chat!\n`;
+        message += `\n📸 *Observação Importante:* Especifiquei uma referência personalizada de bolo acima e enviarei a foto/imagem de referência aqui neste chat!\n`;
       }
 
       if (hasConsultItems) {
         message += `\n⚠️ *${t.consultMessage}*\n`;
       }
       
-      message += `\n${settings.whatsappClosingMessage || 'Thank you for your order! We will contact you shortly to confirm.'}`;
+      message += `\n${settings.whatsappClosingMessage || 'Obrigada pelo pedido! Em breve entraremos em contato para confirmar.'}`;
 
       const encodedMessage = encodeURIComponent(message);
       const cleanPhone = getCleanWhatsAppPhone(settings.whatsappNumber || '', settings.whatsappCountryCode || '+1');
       
       if (!cleanPhone) {
-        toast.error(settings.language === 'en' 
-          ? 'Error: Representative contact number is not properly configured in the administration panel.' 
-          : 'Erro: Número para contato não configurado corretamente no painel administrativo.'
-        );
+        toast.error('Erro: Número para contato não configurado corretamente no painel administrativo.');
         return;
       }
 
@@ -1874,10 +1790,10 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       setStandardSuccessUrls({ whatsapp: whatsappUrl });
       setCheckoutStep('channels');
       setHasRedirected(false);
-      toast.success(settings.language === 'en' ? 'Order saved! Select your dispatch method below.' : 'Pedido salvo! Selecione a forma de envio abaixo.');
+      toast.success('Pedido salvo! Selecione a forma de envio abaixo.');
     } catch (error) {
       console.error("Erro ao salvar pedido:", error);
-      toast.error(settings.language === 'en' ? 'Error finalizing order. Please try again.' : 'Erro ao finalizar pedido. Por favor, tente novamente.');
+      toast.error('Erro ao finalizar pedido. Por favor, tente novamente.');
     } finally {
       setIsSubmitting(false);
     }
@@ -1919,7 +1835,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
     e.preventDefault();
     
     if (cart.length === 0) {
-      toast.error(settings.language === 'en' ? 'Your cart is empty!' : 'Seu carrinho está vazio!');
+      toast.error('Seu carrinho está vazio!');
       return;
     }
 
@@ -1930,7 +1846,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
     }
 
     if (!b2bName.trim() || !b2bResponsibleName.trim() || !b2bPhone.trim() || !b2bAddress.trim() || !b2bZipCode.trim() || !b2bCity.trim() || !b2bDate) {
-      toast.error('Please fill in all required fields!');
+      toast.error('Preencha todos os campos obrigatórios!');
       return;
     }
 
@@ -1939,17 +1855,17 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       let titleStr = item.selectedSize ? `${product.title} (${item.selectedSize.name})` : product.title;
       if (item.cakeOptions) {
         const parts = [];
-        if (item.cakeOptions.size) parts.push(`Size: ${item.cakeOptions.size}`);
-        if (item.cakeOptions.dough) parts.push(`Dough: ${item.cakeOptions.dough}`);
-        if (item.cakeOptions.fillings && item.cakeOptions.fillings.length > 0) parts.push(`Fillings: ${item.cakeOptions.fillings.join(' + ')}`);
-        if (item.cakeOptions.topping) parts.push(`Topping: ${item.cakeOptions.topping}`);
-        if (item.cakeOptions.topper) parts.push(`Topper: ${item.cakeOptions.topper}`);
+        if (item.cakeOptions.size) parts.push(`Tamanho: ${item.cakeOptions.size}`);
+        if (item.cakeOptions.dough) parts.push(`Massa: ${item.cakeOptions.dough}`);
+        if (item.cakeOptions.fillings && item.cakeOptions.fillings.length > 0) parts.push(`Recheios: ${item.cakeOptions.fillings.join(' + ')}`);
+        if (item.cakeOptions.topping) parts.push(`Cobertura: ${item.cakeOptions.topping}`);
+        if (item.cakeOptions.topper) parts.push(`Topo do Bolo: ${item.cakeOptions.topper}`);
         if (item.cakeOptions.styleNumber) parts.push(`Estilo nº ${item.cakeOptions.styleNumber}`);
         titleStr += ` [${parts.join(', ')}]`;
       }
       if (item.sandwichOptions) {
         const parts = [];
-        if (item.sandwichOptions.fillings && item.sandwichOptions.fillings.length > 0) parts.push(`${settings.language === 'en' ? 'State' : 'Estado'}: ${item.sandwichOptions.fillings.join(' + ')}`);
+        if (item.sandwichOptions.fillings && item.sandwichOptions.fillings.length > 0) parts.push(`Estado: ${item.sandwichOptions.fillings.join(' + ')}`);
         titleStr += ` [${parts.join(', ')}]`;
       }
       if (item.comboOptions?.items && item.comboOptions.items.length > 0) {
@@ -1958,7 +1874,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       }
       if (item.boxOptions?.flavors && item.boxOptions.flavors.length > 0) {
         const parts = item.boxOptions.flavors.map(sub => `${sub.quantity}x ${sub.name} ($${Number(sub.unitPrice || 0).toFixed(2)})`);
-        titleStr += ` [Box (${item.boxOptions.capacity} un): ${parts.join(', ')}]`;
+        titleStr += ` [Caixa (${item.boxOptions.capacity} un.): ${parts.join(', ')}]`;
       }
       return {
         title: titleStr,
@@ -1976,7 +1892,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       city: b2bCity,
       pickupDate: b2bDate ? (() => {
         const [year, month, day] = b2bDate.split('-');
-        return `${month}/${day}/${year}`;
+        return `${day}/${month}/${year}`;
       })() : '',
       birthday: '',
       observation: b2bObservation,
@@ -1984,7 +1900,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       items: orderItems,
       total: 0,
       createdAt: serverTimestamp(),
-      orderLanguage: 'en',
+      orderLanguage: 'pt',
       isB2B: true,
       isPJ: true,
       b2bManagerName: b2bResponsibleName,
@@ -1996,7 +1912,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
     };
 
     try {
-      console.log('Sending corporate B2B order request...', b2bOrderObj);
+      console.log('Enviando pedido corporativo B2B...', b2bOrderObj);
       await addDoc(collection(db, 'pedidos'), b2bOrderObj);
       
       // Persist client details in localStorage so it autofills on subsequent visits!
@@ -2011,24 +1927,24 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       setIsReturningB2b(true);
 
       const now = new Date();
-      const timeStr = now.toLocaleTimeString('en-US', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
-      const dateStr = now.toLocaleDateString('en-US', { timeZone: 'America/Sao_Paulo' });
+      const timeStr = now.toLocaleTimeString('pt-BR', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit' });
+      const dateStr = now.toLocaleDateString('pt-BR', { timeZone: 'America/New_York' });
 
       let message = `*Pedido Corporativo - ${settings.brandName || settings.slug}*\n`;
-      message += `*Date:* ${dateStr} at ${timeStr}\n\n`;
-      message += `*--- COMPANY DETAILS ---*\n`;
-      message += `*Company Name:* ${b2bName}\n`;
-      message += `*Contact Manager:* ${b2bResponsibleName}\n`;
-      message += `*Phone:* ${b2bPhone}\n`;
-      message += `*Delivery Address:* ${b2bAddress}\n`;
+      message += `*Data:* ${dateStr} às ${timeStr}\n\n`;
+      message += `*--- DADOS DA EMPRESA ---*\n`;
+      message += `*Empresa:* ${b2bName}\n`;
+      message += `*Responsável:* ${b2bResponsibleName}\n`;
+      message += `*Telefone:* ${b2bPhone}\n`;
+      message += `*Endereço de Entrega:* ${b2bAddress}\n`;
       message += `*Zip Code:* ${b2bZipCode}\n`;
-      message += `*City:* ${b2bCity}\n`;
-      message += `*Frequency:* ${b2bFrequency === 'weekly' ? 'Weekly Contract (Recurring)' : 'One-Time Order (Spot)'}\n`;
-      message += `*Target Start Date:* ${b2bOrderObj.pickupDate}\n`;
+      message += `*Cidade:* ${b2bCity}\n`;
+      message += `*Frequência:* ${b2bFrequency === 'weekly' ? 'Contrato Semanal (Recorrente)' : 'Pedido Único'}\n`;
+      message += `*Data Prevista:* ${b2bOrderObj.pickupDate}\n`;
       if (b2bObservation) {
-        message += `*Notes:* ${b2bObservation}\n`;
+        message += `*Obs:* ${b2bObservation}\n`;
       }
-      message += `\n*--- ORDERED ITEMS ---*\n`;
+      message += `\n*--- ITENS DO PEDIDO ---*\n`;
       orderItems.forEach(item => {
         message += `• ${item.quantity}x ${item.title}\n`;
       });
@@ -2038,7 +1954,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       const cleanPhone = getCleanWhatsAppPhone(settings.whatsappNumber || '', settings.whatsappCountryCode || '+1');
 
       if (!cleanPhone) {
-        toast.error('Representative contact number is not fully configured in the Admin panel.');
+        toast.error('Número para contato não configurado no painel administrativo.');
         return;
       }
 
@@ -2051,10 +1967,10 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
       setB2bSuccessUrls({ whatsapp: whatsappUrl });
       setCheckoutStep('b2b_channels');
       setHasRedirected(false);
-      toast.success('Corporate order saved! Choose how you would like to submit below.');
+      toast.success('Pedido corporativo salvo! Escolha como enviar abaixo.');
     } catch (error) {
-      console.error('Error saving B2B corporate order details:', error);
-      toast.error('Failed to submit corporate request. Please verify and try again.');
+      console.error('Erro ao salvar pedido B2B:', error);
+      toast.error('Falha ao enviar pedido corporativo. Verifique e tente novamente.');
     }
   };
 
@@ -2088,7 +2004,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
               className="text-3xl font-serif font-extrabold italic tracking-tight"
               style={{ color: settings.brandNameColor || settings.primaryColor || '#000000' }}
             >
-              {renderTitle(settings.introTitle || 'PranaYummy')}
+              {renderTitle(settings.introTitle || settings.brandName || 'Gabi´s sweets')}
             </h1>
             
             <div className="flex items-center justify-center gap-3 py-1">
@@ -2097,16 +2013,20 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
               <div className="h-[1px] w-12 bg-black/15" />
             </div>
 
-            <p className="text-lg font-serif italic text-black/80 font-medium">
-              {settings.introSubtitle || 'Comer bem é o primeiro passo para uma vida saudável.'}
-            </p>
+            {Boolean(settings.introSubtitle && settings.introSubtitle.trim()) && (
+              <p className="text-lg font-serif italic text-black/80 font-medium">
+                {settings.introSubtitle}
+              </p>
+            )}
             
-            <p 
-              className="text-sm font-medium italic max-w-xs mx-auto"
-              style={{ color: settings.primaryColor || '#865d39' }}
-            >
-              {settings.introDescription || 'Se você quer mais leveza, mais saúde e mais qualidade de vida... comece pelo básico bem feito: sua alimentação.'}
-            </p>
+            {Boolean(settings.introDescription && settings.introDescription.trim()) && (
+              <p 
+                className="text-sm font-medium italic max-w-xs mx-auto"
+                style={{ color: settings.primaryColor || '#865d39' }}
+              >
+                {settings.introDescription}
+              </p>
+            )}
           </div>
 
           {/* CTA Button */}
@@ -2118,12 +2038,14 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
               className="w-full py-4 px-6 rounded-full font-bold text-sm tracking-widest uppercase shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
               style={{ backgroundColor: settings.primaryColor, color: getContrastText(settings.primaryColor) }}
             >
-              {settings.introButtonText || 'VIEW OUR MENU'}
+              {settings.introButtonText || 'VER NOSSO CARDÁPIO'}
             </button>
             
-            <p className="text-[10px] font-mono font-bold tracking-widest opacity-60 uppercase text-black pt-1">
-              {settings.introBottomText || 'HANDCRAFTED CAKES & DESSERTS'}
-            </p>
+            {Boolean(settings.introBottomText && settings.introBottomText.trim()) && (
+              <p className="text-[10px] font-mono font-bold tracking-widest opacity-60 uppercase text-black pt-1">
+                {settings.introBottomText}
+              </p>
+            )}
           </div>
         </motion.div>
       </div>
@@ -2143,7 +2065,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
           style={{ borderColor: settings.primaryColor }}
         />
         <p className="mt-4 font-sans font-semibold text-sm text-black/60">
-          {settings.language === 'en' ? 'Loading catalog...' : 'Carregando catálogo...'}
+          Carregando catálogo...
         </p>
       </div>
     );
@@ -2274,7 +2196,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           {product.trackStock && (
                             <div className="flex justify-end w-full -mt-0.5 mb-1">
                               <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-700 text-white shadow-2xs whitespace-nowrap">
-                                In Stock / Ready
+                                Pronta Entrega / Em Estoque
                               </span>
                             </div>
                           )}
@@ -2286,18 +2208,18 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                               {product.trackStock && (
                                 (product.stockQuantity ?? 0) > 0 ? (
                                   <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200 whitespace-nowrap shadow-2xs">
-                                    {product.stockQuantity} {(product.stockQuantity === 1 ? 'unit' : 'units')} in stock
+                                    {product.stockQuantity} {(product.stockQuantity === 1 ? 'unidade' : 'unidades')} em estoque
                                   </span>
                                 ) : (
                                   <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200 whitespace-nowrap shadow-2xs">
-                                    Sold Out
+                                    Esgotado
                                   </span>
                                 )
                               )}
                             </div>
                             {product.isCombo && (
                               <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-950 border border-amber-500/30 whitespace-nowrap">
-                                🍱 Combo {product.comboQuantity || 5} items
+                                🍱 Combo {product.comboQuantity || 5} itens
                               </span>
                             )}
                           </div>
@@ -2339,10 +2261,10 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                             style={{ color: settings.detailsPriceColor || settings.primaryColor }}
                           >
                             {product.isCombo
-                              ? `Build Combo (${product.comboQuantity || 5} items)`
+                              ? `Montar Combo (${product.comboQuantity || 5} itens)`
                               : (product.sizes && product.sizes.length > 0)
-                                ? 'Choose Options / Quantities'
-                                : 'View Details'}
+                                ? 'Escolher Opções / Quantidades'
+                                : 'Ver Mais Detalhes'}
                           </button>
                         </div>
 
@@ -2351,15 +2273,15 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           <div className="flex flex-col items-start">
                             {product.isCustomBox ? (
                               <p className="text-sm sm:text-base font-black font-serif" style={{ color: settings.detailsPriceColor || settings.primaryColor }}>
-                                {product.price > 0 ? `${currencySymbol}${product.price.toFixed(2)}` : `${product.boxCapacity || 24} Units Box`}
+                                {product.price > 0 ? `${currencySymbol}${product.price.toFixed(2)}` : `Caixa com ${product.boxCapacity || 24} un.`}
                               </p>
                             ) : (product.isCustomCake || product.priceType === 'consult') ? (
                               <span className="text-[9px] sm:text-[10px] uppercase font-serif font-black tracking-wider px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-950 border border-amber-500/20">
-                                On Request
+                                Sob Consulta
                               </span>
                             ) : product.sizes && product.sizes.length > 0 ? (
                               <p className="text-xs sm:text-base font-bold" style={{ color: settings.detailsPriceColor || settings.primaryColor }}>
-                                From {currencySymbol}{Math.min(...product.sizes.map(s => s.price)).toFixed(2)}
+                                A partir de {currencySymbol}{Math.min(...product.sizes.map(s => s.price)).toFixed(2)}
                               </p>
                             ) : ((product.price && product.price > 0) || (product.oldPrice && product.oldPrice > 0)) ? (
                               <div className="flex items-baseline gap-1.5">
@@ -2374,7 +2296,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                               </div>
                             ) : (
                               <span className="text-[9px] sm:text-[10px] uppercase font-serif font-black tracking-wider px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-950 border border-amber-500/20">
-                                On Request
+                                Sob Consulta
                               </span>
                             )}
                           </div>
@@ -2384,7 +2306,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                               if (product.trackStock && (product.stockQuantity ?? 0) <= 0) {
                                 return (
                                   <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-red-100 text-red-700 border border-red-200 select-none">
-                                    Sold Out
+                                    Esgotado
                                   </span>
                                 );
                               }
@@ -2405,7 +2327,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                     style={{ backgroundColor: settings.primaryColor, color: getContrastText(settings.primaryColor) }}
                                   >
                                     <Plus size={14} />
-                                    <span>Assemble Box</span>
+                                    <span>Montar Caixa</span>
                                   </button>
                                 );
                               }
@@ -2423,7 +2345,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                     style={{ backgroundColor: settings.primaryColor, color: getContrastText(settings.primaryColor) }}
                                   >
                                     <Plus size={14} />
-                                    <span>Build Combo</span>
+                                    <span>Montar Combo</span>
                                   </button>
                                 );
                               }
@@ -2543,14 +2465,14 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
           })
         ) : (
           <div className="text-center p-12 opacity-75 glass-box rounded-2xl">
-            {settings.language === 'en' ? 'No products found.' : 'Nenhum produto encontrado.'}
+            Nenhum produto encontrado.
           </div>
         )}
       </div>
 
       {settings?.showStorageInstructionsButton !== false && (
         <div className="w-full flex flex-col items-center mt-28 mb-16 gap-16 relative">
-          {/* Button 1: CONSUMPTION INSTRUCTIONS */}
+          {/* Botão 1: INSTRUÇÕES DE CONSUMO */}
           <div className="flex flex-col items-center relative">
             <div className="absolute -top-7 z-10 flex flex-col items-center animate-bounce" style={{ animationDuration: '3s' }}>
               <div 
@@ -2572,7 +2494,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
               style={{ backgroundColor: settings?.primaryColor || '#865d39' }}
             >
               <span className="text-xs sm:text-sm font-black uppercase tracking-wider">
-                CONSUMPTION INSTRUCTIONS
+                INSTRUÇÕES DE CONSUMO
               </span>
             </motion.button>
           </div>
@@ -2609,18 +2531,18 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     {isBelowMin ? <Lock size={22} className="text-amber-300 shrink-0" /> : <ShoppingBag size={24} />}
                     <div className="flex flex-col text-left">
                       <span className="text-base sm:text-lg leading-tight">
-                        {settings.language === 'en' ? 'View Order' : 'Ver Pedido'}
+                        Ver Pedido
                       </span>
                       {isBelowMin && (
                         <span className="text-[11px] text-amber-300/90 font-sans font-medium">
-                          Minimum: {currencySymbol}{minVal.toFixed(2)} • Needed: {currencySymbol}{diff.toFixed(2)}
+                          Pedido Mínimo: {currencySymbol}{minVal.toFixed(2)} • Faltam: {currencySymbol}{diff.toFixed(2)}
                         </span>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 font-serif text-sm shrink-0">
                     <span className="bg-white/20 px-2.5 py-1 rounded-full text-xs font-sans">
-                      {cartItemsCount} {cartItemsCount === 1 ? 'item' : 'items'}
+                      {cartItemsCount} {cartItemsCount === 1 ? 'item' : 'itens'}
                     </span>
                     <span className="font-bold">{currencySymbol}{cartTotal.toFixed(2)}</span>
                   </div>
@@ -2699,16 +2621,16 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                 {item.cupcakeOptions && (
                                   <div className="text-[10px] leading-tight mt-1 space-y-0.5 text-black/70 break-words">
                                     {item.cupcakeOptions.dough && (
-                                      <div>Batter: <span className="font-bold text-black">{item.cupcakeOptions.dough}</span></div>
+                                      <div>Massa: <span className="font-bold text-black">{item.cupcakeOptions.dough}</span></div>
                                     )}
                                     {item.cupcakeOptions.filling && (
-                                      <div>Filling: <span className="font-bold text-black">{item.cupcakeOptions.filling}</span></div>
+                                      <div>Recheio: <span className="font-bold text-black">{item.cupcakeOptions.filling}</span></div>
                                     )}
                                     {item.cupcakeOptions.frosting && (
-                                      <div>Frosting: <span className="font-bold text-black">{item.cupcakeOptions.frosting}</span></div>
+                                      <div>Cobertura: <span className="font-bold text-black">{item.cupcakeOptions.frosting}</span></div>
                                     )}
                                     {item.cupcakeOptions.flavor && (
-                                      <div>Flavor: <span className="font-bold text-black">{item.cupcakeOptions.flavor}</span></div>
+                                      <div>Sabor: <span className="font-bold text-black">{item.cupcakeOptions.flavor}</span></div>
                                     )}
                                   </div>
                                 )}
@@ -2716,38 +2638,38 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                 {item.cakeOptions && (
                                   <div className="text-[10px] leading-tight mt-1 space-y-0.5 text-black/60 break-words">
                                     {item.cakeOptions.size && (
-                                      <div>Size: <span className="font-bold text-black">{item.cakeOptions.size}</span></div>
+                                      <div>Tamanho: <span className="font-bold text-black">{item.cakeOptions.size}</span></div>
                                     )}
                                     {item.cakeOptions.dough && (
-                                      <div>Batter: <span className="font-bold text-black">{item.cakeOptions.dough}</span></div>
+                                      <div>Massa: <span className="font-bold text-black">{item.cakeOptions.dough}</span></div>
                                     )}
                                     {item.cakeOptions.fillings && item.cakeOptions.fillings.length > 0 && (
-                                      <div>Filling: <span className="font-bold text-black">{item.cakeOptions.fillings.join(' + ')}</span></div>
+                                      <div>Recheio: <span className="font-bold text-black">{item.cakeOptions.fillings.join(' + ')}</span></div>
                                     )}
                                     {item.cakeOptions.topping && (
-                                      <div>Frosting: <span className="font-bold text-black">{item.cakeOptions.topping}</span></div>
+                                      <div>Cobertura: <span className="font-bold text-black">{item.cakeOptions.topping}</span></div>
                                     )}
                                     {item.cakeOptions.topper && (
-                                      <div>Topper: <span className="font-bold text-black">{item.cakeOptions.topper}</span></div>
+                                      <div>Topo do Bolo: <span className="font-bold text-black">{item.cakeOptions.topper}</span></div>
                                     )}
                                     {item.cakeOptions.styleNumber && (
-                                      <div>Reference: <span className="font-bold text-black">Photo #{item.cakeOptions.styleNumber}</span></div>
+                                      <div>Referência: <span className="font-bold text-black">Foto #{item.cakeOptions.styleNumber}</span></div>
                                     )}
                                     {item.cakeOptions.customStyleDescription && (
                                       <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-950 font-medium space-y-0.5 mt-0.5">
-                                        <div>Custom Ref: <span className="font-bold text-black">"{item.cakeOptions.customStyleDescription}"</span></div>
-                                        <div className="text-[9px] text-amber-800 font-bold">📸 Send photo via WhatsApp</div>
+                                        <div>Ref. Personalizada: <span className="font-bold text-black">"{item.cakeOptions.customStyleDescription}"</span></div>
+                                        <div className="text-[9px] text-amber-800 font-bold">📸 Enviar foto pelo WhatsApp</div>
                                       </div>
                                     )}
                                     {item.cakeOptions.cakeObservation && (
-                                      <div>Note: <span className="font-bold text-black">"{item.cakeOptions.cakeObservation}"</span></div>
+                                      <div>Obs.: <span className="font-bold text-black">"{item.cakeOptions.cakeObservation}"</span></div>
                                     )}
                                   </div>
                                 )}
                                 {item.comboOptions && item.comboOptions.items.length > 0 && (
                                   <div className="text-[10px] leading-tight mt-1.5 p-2 bg-amber-500/10 rounded-xl border border-amber-500/20 text-black/80 break-words space-y-1">
                                     <span className="font-black text-amber-950 uppercase text-[9px] block">
-                                      Selected Flavors:
+                                      Sabores Selecionados:
                                     </span>
                                     <ul className="space-y-0.5">
                                       {item.comboOptions.items.map((sub, sIdx) => (
@@ -2762,14 +2684,14 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                 {item.boxOptions && item.boxOptions.flavors && item.boxOptions.flavors.length > 0 && (
                                   <div className="text-[10px] leading-tight mt-1.5 p-2 bg-amber-500/10 rounded-xl border border-amber-500/20 text-black/80 break-words space-y-1">
                                     <span className="font-black text-amber-950 uppercase text-[9px] block">
-                                      Box Selection ({item.boxOptions.capacity} units):
+                                      Seleção da Caixa ({item.boxOptions.capacity} unidades):
                                     </span>
                                     <ul className="space-y-0.5">
                                       {item.boxOptions.flavors.map((sub, sIdx) => (
                                         <li key={sIdx} className="font-medium text-black flex justify-between items-center gap-2">
                                           <span>• <span className="font-bold">{sub.quantity}x</span> {sub.name}</span>
                                           <span className="font-bold text-amber-950 text-[10px] shrink-0">
-                                            {sub.unitPrice > 0 ? `$${(sub.quantity * sub.unitPrice).toFixed(2)}` : 'Included'}
+                                            {sub.unitPrice > 0 ? `$${(sub.quantity * sub.unitPrice).toFixed(2)}` : 'Incluso'}
                                           </span>
                                         </li>
                                       ))}
@@ -2788,7 +2710,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                   </p>
                                 ) : (product.isCustomCake || product.priceType === 'consult') ? (
                                   <span className="text-[10px] uppercase font-serif font-black tracking-wider px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-950 border border-amber-500/20">
-                                    {settings.language === 'en' ? 'On Request' : 'A Consultar'}
+                                    A Consultar
                                   </span>
                                 ) : item.selectedSize ? (
                                   <div className="flex items-baseline gap-1.5">
@@ -2814,7 +2736,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                   </div>
                                 ) : (
                                   <span className="text-[10px] uppercase font-serif font-black tracking-wider px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-950 border border-amber-500/20">
-                                    {settings.language === 'en' ? 'On Request' : 'A Consultar'}
+                                    A Consultar
                                   </span>
                                 )}
                               </div>
@@ -2836,7 +2758,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                       const currentInCart = cart.filter(c => c.productId === prod.id).reduce((sum, c) => sum + c.quantity, 0);
                                       const maxStock = Number(prod.stockQuantity ?? 0);
                                       if (currentInCart + 1 > maxStock) {
-                                        toast.error('Maximum quantity available in stock reached!');
+                                        toast.error('Quantidade máxima disponível em estoque atingida!');
                                         return;
                                       }
                                     }
@@ -2883,17 +2805,17 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                         <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 shadow-xs space-y-2.5 text-left">
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-xs font-black uppercase tracking-wide text-amber-950">
-                              Minimum Order: {currencySymbol}{minVal.toFixed(2)}
+                              Pedido Mínimo: {currencySymbol}{minVal.toFixed(2)}
                             </span>
                             <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-200/80 text-amber-900 border border-amber-300 whitespace-nowrap">
-                              🚚 Minimum Order
+                              🛍️ Pedido Mínimo
                             </span>
                           </div>
 
                           <p className="text-[11px] text-amber-900/90 leading-relaxed font-medium">
                             {isBelow 
-                              ? `The minimum order amount is ${currencySymbol}${minVal.toFixed(2)}.`
-                              : `Congratulations! You have reached the minimum order amount of ${currencySymbol}${minVal.toFixed(2)}.`
+                              ? `O valor mínimo do pedido é ${currencySymbol}${minVal.toFixed(2)}.`
+                              : `Parabéns! Você atingiu o valor mínimo de ${currencySymbol}${minVal.toFixed(2)}.`
                             }
                           </p>
 
@@ -2907,7 +2829,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
 
                           <div className="flex items-center justify-between text-[11px] font-bold">
                             <span className={isBelow ? "text-amber-900 font-extrabold" : "text-emerald-700 font-extrabold"}>
-                              {isBelow ? `Remaining for minimum: ${currencySymbol}${diff.toFixed(2)}` : '✓ Minimum order reached!'}
+                              {isBelow ? `Faltam para o mínimo: ${currencySymbol}${diff.toFixed(2)}` : '✓ Pedido mínimo atingido!'}
                             </span>
                             <span className="text-amber-800 text-[10px]">{percent}%</span>
                           </div>
@@ -2928,7 +2850,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                               disabled
                               className="w-full py-4 rounded-xl font-black text-sm bg-gray-200 text-gray-500 cursor-not-allowed flex items-center justify-center gap-2 select-none border border-gray-300 shadow-none"
                             >
-                              <span>🔒 Minimum {currencySymbol}{minVal.toFixed(2)} ({currencySymbol}{diff.toFixed(2)} remaining)</span>
+                              <span>🔒 Mínimo {currencySymbol}{minVal.toFixed(2)} (faltam {currencySymbol}{diff.toFixed(2)})</span>
                             </button>
                             <button
                               type="button"
@@ -2936,7 +2858,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                               className="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm text-white shadow-md active:scale-95 transition-all cursor-pointer border-0 text-center flex items-center justify-center gap-2"
                               style={{ backgroundColor: settings.primaryColor || '#865d39' }}
                             >
-                              <span>+ Add more items from the menu</span>
+                              <span>+ Adicionar mais itens do cardápio</span>
                             </button>
                           </div>
                         );
@@ -2969,71 +2891,27 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     </div>
                     <div className="space-y-1">
                       <h3 className="text-xl font-serif font-black uppercase tracking-wide text-black">
-                        ORDER SAVED!
+                        PEDIDO SALVO!
                       </h3>
                       <p className="text-xs font-semibold text-black/60 max-w-sm mx-auto">
-                        Your order details have been successfully recorded.
+                        Os dados do seu pedido foram registrados com sucesso.
                       </p>
                     </div>
 
-                    {/* Exibição detalhada de entrega / taxa no resumo final */}
-                    {formData.deliveryOption === 'delivery' ? (
-                      <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 text-xs text-left max-w-sm mx-auto space-y-1.5 font-sans shadow-xs">
-                        <div className="flex justify-between text-gray-700">
-                          <span>Items Subtotal:</span>
-                          <span className="font-bold text-black">{currencySymbol}{cartTotal.toFixed(2)}</span>
-                        </div>
-                        {(() => {
-                          const foundNeighborhood = (settings.deliveryNeighborhoods || []).find(n => n.name === formData.neighborhood);
-                          const fee = formData.neighborhood === 'Outro' ? 0 : Number(foundNeighborhood?.fee || 0);
-                          const neighborhoodLabel = formData.neighborhood === 'Outro' 
-                            ? (formData.customNeighborhood ? `Other (${formData.customNeighborhood})` : 'Other') 
-                            : (formData.neighborhood || 'Delivery');
-                          return (
-                            <>
-                              <div className="flex justify-between text-gray-700">
-                                <span>Delivery Fee ({neighborhoodLabel}):</span>
-                                <span className="font-bold text-black">
-                                  {formData.neighborhood === 'Outro'
-                                    ? 'To be agreed (WhatsApp)'
-                                    : fee > 0
-                                      ? `${currencySymbol}${fee.toFixed(2)}`
-                                      : 'Free'}
-                                </span>
-                              </div>
-                              <div className="pt-2 border-t border-gray-200 flex justify-between font-bold text-black text-sm">
-                                <span>Order Total:</span>
-                                <span className="text-base font-black" style={{ color: settings.primaryColor || '#000000' }}>
-                                  {currencySymbol}{(cartTotal + fee).toFixed(2)}
-                                </span>
-                              </div>
-                            </>
-                          );
-                        })()}
+                    {/* Resumo final */}
+                    <div className="p-3.5 rounded-2xl bg-gray-50 border border-gray-200 text-xs text-left max-w-sm mx-auto space-y-1 font-sans shadow-xs">
+                      <div className="flex justify-between font-bold text-black text-sm">
+                        <span>Total do Pedido:</span>
+                        <span className="text-base font-black" style={{ color: settings.primaryColor || '#000000' }}>
+                          {currencySymbol}{cartTotal.toFixed(2)}
+                        </span>
                       </div>
-                    ) : (
-                      <div className="p-3.5 rounded-2xl bg-gray-50 border border-gray-200 text-xs text-left max-w-sm mx-auto space-y-1 font-sans shadow-xs">
-                        <div className="flex justify-between text-gray-700">
-                          <span>Fulfillment Option:</span>
-                          <span className="font-bold text-black">Store Pick Up</span>
-                        </div>
-                        <div className="flex justify-between text-gray-700">
-                          <span>Delivery Fee:</span>
-                          <span className="font-bold text-black">Free ({currencySymbol}0.00)</span>
-                        </div>
-                        <div className="pt-1.5 border-t border-gray-200 flex justify-between font-bold text-black text-sm">
-                          <span>Total Amount:</span>
-                          <span className="text-base font-black" style={{ color: settings.primaryColor || '#000000' }}>
-                            {currencySymbol}{cartTotal.toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                    )}
+                    </div>
 
                     {!hasRedirected ? (
                       <>
                         <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 text-amber-950 font-medium text-xs font-sans text-left leading-relaxed">
-                          To finalize your order and send a copy to our kitchen, click the WhatsApp button below:
+                          Para finalizar seu pedido e enviar uma cópia para nossa equipe, clique no botão do WhatsApp abaixo:
                         </div>
 
                         <div className="grid grid-cols-1 gap-3 pt-2">
@@ -3053,7 +2931,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                             }}
                             className="flex items-center justify-center w-full py-4 px-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold font-sans text-sm shadow-md transition-all active:scale-95 cursor-pointer border-0 text-center"
                           >
-                            <span>Send Order via WhatsApp</span>
+                            <span>Enviar Pedido pelo WhatsApp</span>
                           </button>
                         </div>
 
@@ -3065,15 +2943,15 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           }}
                           className="text-xs font-bold text-gray-500 hover:text-black hover:underline mt-4 uppercase tracking-wider block mx-auto cursor-pointer"
                         >
-                          Back to Details
+                          Voltar aos Dados
                         </button>
                       </>
                     ) : (
                       <>
                         <div className="p-4 rounded-xl bg-green-50 border border-green-200 text-green-950 font-medium text-xs font-sans text-left leading-relaxed space-y-2">
-                          <p className="font-bold text-sm text-green-800">Your order is ready to send via WhatsApp!</p>
-                          <p>If WhatsApp opened and you sent your message, you can finish and clear your shopping cart now.</p>
-                          <p className="text-amber-700">If the chat didn't open or you need to make changes, click "Back and Adjust" to review your info without losing anything!</p>
+                          <p className="font-bold text-sm text-green-800">Seu pedido está pronto para envio pelo WhatsApp!</p>
+                          <p>Se o WhatsApp abriu e você enviou sua mensagem, já pode concluir e limpar o carrinho agora.</p>
+                          <p className="text-amber-700">Se a conversa não abriu ou precisar ajustar algo, clique em "Voltar e Ajustar" sem perder os dados!</p>
                         </div>
 
                         <div className="grid grid-cols-1 gap-3 pt-2">
@@ -3084,7 +2962,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                             }}
                             className="flex items-center justify-center w-full py-4 px-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold font-sans text-sm shadow-md transition-all active:scale-95 cursor-pointer border-0 text-center"
                           >
-                            <span>Yes, Clear Cart and Finish</span>
+                            <span>Sim, Limpar Carrinho e Concluir</span>
                           </button>
 
                           <button
@@ -3102,7 +2980,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                             }}
                             className="flex items-center justify-center w-full py-3 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold font-sans text-xs shadow-sm transition-all active:scale-95 cursor-pointer border-0 text-center"
                           >
-                            <span>Try Sending Again</span>
+                            <span>Tentar Enviar Novamente</span>
                           </button>
 
                           <button 
@@ -3112,7 +2990,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                             }}
                             className="text-xs font-bold text-gray-500 hover:text-black hover:underline mt-2 uppercase tracking-wider block mx-auto cursor-pointer"
                           >
-                            Back and Adjust
+                            Voltar e Ajustar
                           </button>
                         </div>
                       </>
@@ -3125,17 +3003,17 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     </div>
                     <div className="space-y-1">
                       <h3 className="text-xl font-serif font-black uppercase tracking-wide text-black">
-                        ORDER SAVED!
+                        PEDIDO SALVO!
                       </h3>
                       <p className="text-xs font-semibold text-black/60 max-w-sm mx-auto">
-                        Your corporate order details have been registered successfully.
+                        Os dados do pedido corporativo foram registrados com sucesso.
                       </p>
                     </div>
 
                     {!hasRedirected ? (
                       <>
                         <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 text-amber-950 font-medium text-xs font-sans text-left leading-relaxed">
-                          To finalize your corporate order and send a copy, click the button below:
+                          Para finalizar seu pedido corporativo e enviar uma cópia, clique no botão abaixo:
                         </div>
 
                         <div className="grid grid-cols-1 gap-3 pt-2">
@@ -3155,7 +3033,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                             }}
                             className="flex items-center justify-center w-full py-4 px-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold font-sans text-sm shadow-md transition-all active:scale-95 cursor-pointer border-0 text-center"
                           >
-                            <span>Send Order via WhatsApp</span>
+                            <span>Enviar Pedido pelo WhatsApp</span>
                           </button>
                         </div>
 
@@ -3167,15 +3045,15 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           }}
                           className="text-xs font-bold text-gray-500 hover:text-black hover:underline mt-4 uppercase tracking-wider block mx-auto cursor-pointer"
                         >
-                          Back to Details
+                          Voltar aos Dados
                         </button>
                       </>
                     ) : (
                       <>
                         <div className="p-4 rounded-xl bg-green-50 border border-green-200 text-green-950 font-medium text-xs font-sans text-left leading-relaxed space-y-2">
-                          <p className="font-bold text-sm text-green-800">Your corporate order was directed to WhatsApp!</p>
-                          <p>If the chat opened and you sent your message, you can finish and clear your corporate shopping cart now.</p>
-                          <p className="text-amber-700">If you need to make changes or re-send, click "Back and Adjust"!</p>
+                          <p className="font-bold text-sm text-green-800">Seu pedido corporativo foi direcionado para o WhatsApp!</p>
+                          <p>Se a conversa abriu e você enviou sua mensagem, já pode concluir e limpar seu carrinho corporativo.</p>
+                          <p className="text-amber-700">Se precisar fazer alterações ou reenviar, clique em "Voltar e Ajustar"!</p>
                         </div>
 
                         <div className="grid grid-cols-1 gap-3 pt-2">
@@ -3186,7 +3064,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                             }}
                             className="flex items-center justify-center w-full py-4 px-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold font-sans text-sm shadow-md transition-all active:scale-95 cursor-pointer border-0 text-center"
                           >
-                            <span>Yes, Clear Cart and Finish</span>
+                            <span>Sim, Limpar Carrinho e Concluir</span>
                           </button>
 
                           <button
@@ -3204,7 +3082,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                             }}
                             className="flex items-center justify-center w-full py-3 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold font-sans text-xs shadow-sm transition-all active:scale-95 cursor-pointer border-0 text-center"
                           >
-                            <span>Try Sending Again</span>
+                            <span>Tentar Enviar Novamente</span>
                           </button>
 
                           <button 
@@ -3214,7 +3092,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                             }}
                             className="text-xs font-bold text-gray-500 hover:text-black hover:underline mt-2 uppercase tracking-wider block mx-auto cursor-pointer"
                           >
-                            Back and Adjust
+                            Voltar e Ajustar
                           </button>
                         </div>
                       </>
@@ -3224,10 +3102,10 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   <div className="space-y-6">
                     <div className="text-center space-y-1">
                       <h3 className="text-xl font-serif font-black uppercase tracking-wide" style={{ color: settings.primaryColor }}>
-                        Corporate Order Details
+                        Dados do Pedido Corporativo
                       </h3>
                       <p className="text-xs font-semibold text-black/60 font-sans max-w-sm mx-auto">
-                        Enter your company details to submit the order.
+                        Informe os dados da sua empresa para enviar o pedido.
                       </p>
                     </div>
 
@@ -3235,10 +3113,10 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       <div className="p-3.5 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-950 flex flex-col gap-1.5 font-sans">
                         <p className="text-xs font-bold flex items-center gap-1.5 text-teal-800">
                           <span className="flex h-2.5 w-2.5 rounded-full bg-teal-500 animate-pulse" />
-                          Saved Corporate Account
+                          Conta Corporativa Salva
                         </p>
                         <p className="text-[10px] opacity-90 leading-tight font-medium">
-                          Your details are saved on this device. Review below or clear for new details.
+                          Seus dados estão salvos neste dispositivo. Revise abaixo ou limpe para preencher novos dados.
                         </p>
                         <button
                           type="button"
@@ -3249,11 +3127,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                             setB2bPhone('');
                             setB2bAddress('');
                             setIsReturningB2b(false);
-                            toast.success('Fields cleared successfully!');
+                            toast.success('Campos limpos com sucesso!');
                           }}
                           className="self-start text-[9px] uppercase tracking-wider font-extrabold text-red-700 hover:underline mt-1 bg-white border border-red-200 px-2 py-1 rounded-lg border-0 cursor-pointer"
                         >
-                          Clear Saved Profile
+                          Limpar Perfil Salvo
                         </button>
                       </div>
                     )}
@@ -3261,7 +3139,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     <form onSubmit={handleFinalizarB2b} className="space-y-4">
                       {/* Company Name */}
                       <div className="space-y-1 relative">
-                        <label className="text-xs font-bold uppercase text-black">Company / Authorized Entity Name *</label>
+                        <label className="text-xs font-bold uppercase text-black">Nome da Empresa *</label>
                         <input 
                           required
                           type="text" 
@@ -3297,7 +3175,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                   setShowB2bSearchDropdown(false);
                                 }}
                               >
-                                {profile.name} (Responsible: {profile.manager})
+                                {profile.name} (Responsável: {profile.manager})
                               </button>
                             ))}
                           </div>
@@ -3307,7 +3185,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       {/* Responsible names */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
-                          <label className="text-xs font-bold uppercase text-black">Authorized Contact Manager *</label>
+                          <label className="text-xs font-bold uppercase text-black">Responsável Autorizado *</label>
                           <input 
                             required
                             type="text" 
@@ -3319,7 +3197,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-xs font-bold uppercase text-black">Corporate/Business Phone *</label>
+                          <label className="text-xs font-bold uppercase text-black">Telefone Corporativo *</label>
                           <div className="relative flex items-center">
                             <span className="absolute left-3 text-xs font-extrabold text-green-700 bg-green-50 px-1 rounded pointer-events-none select-none">
                               {settings.whatsappCountryCode === '+55' ? '+55' : '+1'}
@@ -3342,11 +3220,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
 
                       {/* Commercial Address */}
                       <div className="space-y-1">
-                        <label className="text-xs font-bold uppercase text-black">Company Receiving Address *</label>
+                        <label className="text-xs font-bold uppercase text-black">Endereço de Entrega da Empresa *</label>
                         <input 
                           required
                           type="text" 
-                          placeholder="Street, Number, Suite, Postal Code..."
+                          placeholder="Rua, Número, Sala/Suite, Zip Code..."
                           className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 outline-none text-black font-sans font-semibold"
                           style={{ '--tw-ring-color': settings.primaryColor } as any}
                           value={b2bAddress}
@@ -3369,11 +3247,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-xs font-bold uppercase text-black">City *</label>
+                          <label className="text-xs font-bold uppercase text-black">Cidade *</label>
                           <input 
                             required
                             type="text" 
-                            placeholder="City"
+                            placeholder="Cidade"
                             className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 outline-none text-black font-sans font-semibold"
                             style={{ '--tw-ring-color': settings.primaryColor } as any}
                             value={b2bCity}
@@ -3385,7 +3263,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       {/* Plan and Date */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                          <label className="text-xs font-bold uppercase text-black block">Preferred Order Interval *</label>
+                          <label className="text-xs font-bold uppercase text-black block">Frequência do Pedido *</label>
                           <div className="grid grid-cols-2 gap-2">
                             <button
                               type="button"
@@ -3397,7 +3275,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                   : "bg-white text-black border-gray-300 hover:bg-gray-50"
                               )}
                             >
-                              One-Time Order (Spot)
+                              Pedido Único
                             </button>
                             <button
                               type="button"
@@ -3409,30 +3287,29 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                   : "bg-white text-black border-gray-300 hover:bg-gray-50"
                               )}
                             >
-                              Weekly Plan (Recurring)
+                              Plano Semanal (Recorrente)
                             </button>
                           </div>
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-xs font-bold uppercase text-black">Target Deliver Date *</label>
-                          <input 
-                            required
-                            type="date" 
-                            className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 outline-none text-black font-sans font-semibold"
-                            style={{ '--tw-ring-color': settings.primaryColor } as any}
+                          <label className="text-xs font-bold uppercase text-black">Data Desejada de Entrega *</label>
+                          <BRDatePicker
+                            outputFormat="iso"
+                            placeholder="DD/MM/AAAA"
+                            primaryColor={settings.primaryColor}
                             value={b2bDate}
-                            onChange={e => setB2bDate(e.target.value)}
+                            onChange={val => setB2bDate(val)}
                           />
                         </div>
                       </div>
 
                       {/* Observations */}
                       <div className="space-y-1">
-                        <label className="text-xs font-bold uppercase text-black">Additional Handling Instructions / Notes</label>
+                        <label className="text-xs font-bold uppercase text-black">Instruções Adicionais / Observações</label>
                         <textarea 
                           rows={2}
-                          placeholder="EX: Prefer receiving hours, special billing details or building receiving dock specs..."
+                          placeholder="Ex: Horário preferencial de recebimento, detalhes de faturamento ou instruções do local..."
                           className="w-full p-2.5 rounded-xl border border-gray-300 focus:ring-2 outline-none text-black text-xs font-semibold"
                           style={{ '--tw-ring-color': settings.primaryColor } as any}
                           value={b2bObservation}
@@ -3453,7 +3330,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           className="flex-grow py-4 rounded-xl font-bold text-lg shadow-xl transition-transform active:scale-95 cursor-pointer font-serif border-0"
                           style={{ backgroundColor: settings.primaryColor || '#865d39', color: getContrastText(settings.primaryColor || '#865d39') }}
                         >
-                          Submit Corporate Order
+                          Enviar Pedido Corporativo
                         </button>
                       </div>
                     </form>
@@ -3546,257 +3423,82 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                         </div>
                       </div>
 
-                      {/* Modalidade de Entrega / Retirada */}
-                      <div className="space-y-1.5 pt-1">
-                        <label className="text-xs font-bold uppercase text-black block">
-                          {settings.language === 'en' ? 'Fulfillment Option *' : 'Modalidade do Pedido *'}
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setFormData({ ...formData, deliveryOption: 'delivery' })}
-                            className={cn(
-                              "py-3 px-3 rounded-xl font-bold text-xs border flex items-center justify-center text-center transition-all cursor-pointer",
-                              formData.deliveryOption === 'delivery'
-                                ? "bg-black text-white border-black shadow-sm"
-                                : "bg-white text-black border-gray-300 hover:bg-gray-50"
-                            )}
-                          >
-                            <span>{settings.language === 'en' ? 'Delivery (Address)' : 'Entrega (Delivery)'}</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setFormData({ ...formData, deliveryOption: 'pickup' })}
-                            className={cn(
-                              "py-3 px-3 rounded-xl font-bold text-xs border flex items-center justify-center text-center transition-all cursor-pointer",
-                              formData.deliveryOption === 'pickup'
-                                ? "bg-black text-white border-black shadow-sm"
-                                : "bg-white text-black border-gray-300 hover:bg-gray-50"
-                            )}
-                          >
-                            <span>{settings.language === 'en' ? 'Pick Up (Store)' : 'Retirada (Pick Up)'}</span>
-                          </button>
+                      {/* Endereço */}
+                      <div className="p-4 rounded-2xl bg-white/70 border border-gray-200 space-y-3">
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold uppercase text-black">
+                            Endereço completo *
+                          </label>
+                          <input
+                            required
+                            type="text"
+                            placeholder="Ex: 123 Main St"
+                            className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 outline-none text-black bg-white"
+                            style={{ '--tw-ring-color': settings.primaryColor } as any}
+                            value={formData.street}
+                            onChange={e => setFormData({ ...formData, street: e.target.value })}
+                          />
                         </div>
-                      </div>
-                      
-                      {formData.deliveryOption === 'delivery' ? (
-                        <div className="space-y-4">
-                          {/* Delivery City and Fee */}
-                          <div className="space-y-1.5 p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200">
-                            <label className="text-xs font-bold uppercase text-amber-950 flex items-center justify-between">
-                              <span>Delivery City *</span>
-                              <span className="text-[10px] text-amber-800 font-semibold lowercase">calculates fee</span>
+
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold uppercase text-black">
+                            Apt/Unid
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Ex: Apt 4B"
+                            className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 outline-none text-black bg-white"
+                            style={{ '--tw-ring-color': settings.primaryColor } as any}
+                            value={formData.number}
+                            onChange={e => setFormData({ ...formData, number: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-bold uppercase text-black">
+                              Cidade *
                             </label>
-                            
-                            <select
+                            <input
                               required
-                              value={formData.neighborhood}
-                              onChange={e => setFormData({ ...formData, neighborhood: e.target.value })}
-                              className="w-full p-3 rounded-xl border border-gray-300 bg-white focus:ring-2 outline-none text-black text-xs font-bold cursor-pointer"
+                              type="text"
+                              placeholder="Ex: Orlando"
+                              className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 outline-none text-black bg-white"
                               style={{ '--tw-ring-color': settings.primaryColor } as any}
-                            >
-                              <option value="">Select your delivery city...</option>
-                              {[...(settings.deliveryNeighborhoods || [])]
-                                .sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }))
-                                .map((n, i) => (
-                                  <option key={n.id || i} value={n.name}>
-                                    {n.name} - {currencySymbol} {Number(n.fee || 0).toFixed(2)}
-                                  </option>
-                              ))}
-                              <option value="Outro">Other (City not listed - fee to be agreed via WhatsApp)</option>
-                            </select>
-
-                            {formData.neighborhood === 'Outro' && (
-                              <div className="pt-2 space-y-1">
-                                <label className="text-[11px] font-bold text-amber-950 uppercase">
-                                  What is your city? *
-                                </label>
-                                <input
-                                  required
-                                  type="text"
-                                  placeholder="Enter your city name..."
-                                  className="w-full p-2.5 rounded-xl border border-gray-300 bg-white focus:ring-2 outline-none text-black text-xs font-medium"
-                                  style={{ '--tw-ring-color': settings.primaryColor } as any}
-                                  value={formData.customNeighborhood}
-                                  onChange={e => setFormData({ ...formData, customNeighborhood: e.target.value })}
-                                />
-                                <p className="text-[10px] text-amber-800 font-medium italic">
-                                  * Since this city is not in the automatic list, the delivery fee will be confirmed via WhatsApp.
-                                </p>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="md:col-span-2 space-y-1">
-                              <label className="text-xs font-bold uppercase text-black">{t.street} *</label>
-                              <input 
-                                required
-                                type="text" 
-                                className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 outline-none text-black"
-                                style={{ '--tw-ring-color': settings.primaryColor } as any}
-                                value={formData.street}
-                                onChange={e => setFormData({...formData, street: e.target.value})}
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-xs font-bold uppercase text-black">{t.number}</label>
-                              <input 
-                                type="text" 
-                                className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 outline-none text-black"
-                                style={{ '--tw-ring-color': settings.primaryColor } as any}
-                                value={formData.number}
-                                onChange={e => setFormData({...formData, number: e.target.value})}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                              <label className="text-xs font-bold uppercase text-black">{t.zipCode || 'Zip Code'} *</label>
-                              <input 
-                                required
-                                type="text" 
-                                placeholder="12345"
-                                className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 outline-none text-black"
-                                style={{ '--tw-ring-color': settings.primaryColor } as any}
-                                value={formData.zipCode}
-                                onChange={e => {
-                                  let val = e.target.value.replace(/[^\d-]/g, '');
-                                  if (val.length > 10) val = val.slice(0, 10);
-                                  setFormData({...formData, zipCode: val});
-                                }}
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-xs font-bold uppercase text-black">{t.state} (Optional)</label>
-                              <input 
-                                type="text" 
-                                placeholder="e.g. CA, NY, SP..."
-                                className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 outline-none text-black"
-                                style={{ '--tw-ring-color': settings.primaryColor } as any}
-                                value={formData.state}
-                                onChange={e => setFormData({...formData, state: e.target.value})}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200 text-center space-y-1">
-                          <p className="text-xs font-bold text-amber-950">
-                            📍 Store Pick Up
-                          </p>
-                          <p className="text-[11px] text-amber-900/80">
-                            You will pick up your order directly at our address, with no added delivery charge.
-                          </p>
-                        </div>
-                      )}
-
-                      {/* DELIVERY / PICK UP DATE & TIME */}
-                      <div className="p-3.5 sm:p-4 rounded-2xl bg-amber-50/80 border border-amber-200/90 space-y-3 overflow-hidden">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-amber-900 text-white flex items-center justify-center shrink-0 shadow-2xs" style={{ backgroundColor: settings.primaryColor || '#865d39' }}>
-                            <Calendar size={17} />
-                          </div>
-                          <div>
-                            <h5 className="font-bold text-xs uppercase text-amber-950 tracking-wider">
-                              {formData.deliveryOption === 'delivery' ? 'Delivery Date & Time *' : 'Pick Up Date & Time *'}
-                            </h5>
-                            <p className="text-[10px] sm:text-[11px] text-amber-800">
-                              {formData.deliveryOption === 'delivery'
-                                ? 'Select your preferred date and time for delivery'
-                                : 'Select your preferred date and time for pickup'}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-3 sm:gap-3.5 pt-1">
-                          {/* Date Field */}
-                          <div className="space-y-1 min-w-0">
-                            <div className="flex items-center justify-between text-[11px] font-bold text-amber-950 uppercase">
-                              <span className="flex items-center gap-1.5">
-                                <Calendar size={13} className="text-amber-900" />
-                                Date (Calendar) *
-                              </span>
-                              <span className="text-[10px] text-amber-800/80 lowercase font-medium">MM/DD/YYYY</span>
-                            </div>
-                            <input 
-                              type="date"
-                              required
-                              value={formData.scheduledDate}
-                              onChange={e => setFormData({ ...formData, scheduledDate: e.target.value })}
-                              min={new Date().toISOString().split('T')[0]}
-                              className="w-full py-2 px-2.5 rounded-xl border border-gray-300 bg-white text-black text-xs font-semibold focus:ring-2 outline-none cursor-pointer"
-                              style={{ '--tw-ring-color': settings.primaryColor } as any}
+                              value={formData.city}
+                              onChange={e => setFormData({ ...formData, city: e.target.value })}
                             />
                           </div>
 
-                          {/* Preferred Time Field */}
-                          <div className="space-y-1 min-w-0">
-                            <div className="flex items-center justify-between text-[11px] font-bold text-amber-950 uppercase">
-                              <span className="flex items-center gap-1.5">
-                                <Clock size={13} className="text-amber-900" />
-                                Preferred Time *
-                              </span>
-                              <span className="text-[10px] text-amber-800/80 uppercase font-medium">AM / PM</span>
-                            </div>
-                            <div className="flex items-center gap-1 w-full min-w-0">
-                              {/* Hour */}
-                              <select
-                                value={deliveryHour}
-                                onChange={e => setDeliveryHour(e.target.value)}
-                                className="w-[52px] sm:w-[58px] py-2 px-1 text-center rounded-xl border border-gray-300 bg-white text-black text-xs font-bold focus:ring-2 outline-none cursor-pointer shrink-0"
-                                style={{ '--tw-ring-color': settings.primaryColor } as any}
-                              >
-                                {['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'].map(h => (
-                                  <option key={h} value={h}>{h}</option>
-                                ))}
-                              </select>
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-bold uppercase text-black">
+                              Estado (Opcional)
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Ex: FL"
+                              maxLength={2}
+                              className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 outline-none text-black uppercase bg-white"
+                              style={{ '--tw-ring-color': settings.primaryColor } as any}
+                              value={formData.state}
+                              onChange={e => setFormData({ ...formData, state: e.target.value.toUpperCase() })}
+                            />
+                          </div>
 
-                              <span className="font-bold text-gray-500 text-xs shrink-0">:</span>
-
-                              {/* Minute */}
-                              <select
-                                value={deliveryMinute}
-                                onChange={e => setDeliveryMinute(e.target.value)}
-                                className="w-[52px] sm:w-[58px] py-2 px-1 text-center rounded-xl border border-gray-300 bg-white text-black text-xs font-bold focus:ring-2 outline-none cursor-pointer shrink-0"
-                                style={{ '--tw-ring-color': settings.primaryColor } as any}
-                              >
-                                {['00', '15', '30', '45'].map(m => (
-                                  <option key={m} value={m}>{m}</option>
-                                ))}
-                              </select>
-
-                              {/* AM / PM Toggle */}
-                              <div className="flex rounded-xl border border-gray-300 p-0.5 bg-gray-100 shrink-0 ml-auto">
-                                <button
-                                  type="button"
-                                  onClick={() => setDeliveryPeriod('AM')}
-                                  className={cn(
-                                    "px-2 py-1 rounded-lg text-[11px] font-extrabold transition-all cursor-pointer",
-                                    deliveryPeriod === 'AM'
-                                      ? "text-white shadow-xs"
-                                      : "text-gray-600 hover:text-black"
-                                  )}
-                                  style={deliveryPeriod === 'AM' ? { backgroundColor: settings.primaryColor || '#865d39' } : {}}
-                                >
-                                  AM
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setDeliveryPeriod('PM')}
-                                  className={cn(
-                                    "px-2 py-1 rounded-lg text-[11px] font-extrabold transition-all cursor-pointer",
-                                    deliveryPeriod === 'PM'
-                                      ? "text-white shadow-xs"
-                                      : "text-gray-600 hover:text-black"
-                                  )}
-                                  style={deliveryPeriod === 'PM' ? { backgroundColor: settings.primaryColor || '#865d39' } : {}}
-                                >
-                                  PM
-                                </button>
-                              </div>
-                            </div>
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-bold uppercase text-black">
+                              Zip Code (Opcional)
+                            </label>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              placeholder="Ex: 32819"
+                              maxLength={10}
+                              className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 outline-none text-black bg-white"
+                              style={{ '--tw-ring-color': settings.primaryColor } as any}
+                              value={formData.zipCode}
+                              onChange={e => setFormData({ ...formData, zipCode: e.target.value })}
+                            />
                           </div>
                         </div>
                       </div>
@@ -3812,41 +3514,19 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                         />
                       </div>
 
-                      {/* Resumo com Taxa de Entrega e Total */}
-                      {(() => {
-                        const selectedNeighborhoodObj = (settings.deliveryNeighborhoods || []).find(n => n.name === formData.neighborhood);
-                        const deliveryFee = formData.deliveryOption === 'delivery'
-                          ? (formData.neighborhood === 'Outro' ? 0 : Number(selectedNeighborhoodObj?.fee || 0))
-                          : 0;
-                        const finalTotal = cartTotal + deliveryFee;
-
-                        return (
-                          <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 shadow-2xs space-y-2 text-xs">
-                            <div className="flex justify-between text-gray-700">
-                              <span>Items Subtotal:</span>
-                              <span className="font-bold text-black">{currencySymbol}{cartTotal.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-gray-700">
-                              <span>Delivery Fee:</span>
-                              <span className="font-bold text-black">
-                                {formData.deliveryOption === 'pickup'
-                                  ? 'Free (Store Pick Up)'
-                                  : formData.neighborhood === 'Outro'
-                                    ? 'To be agreed (WhatsApp)'
-                                    : formData.neighborhood
-                                      ? `${currencySymbol}${deliveryFee.toFixed(2)}`
-                                      : 'Select delivery area'}
-                              </span>
-                            </div>
-                            <div className="pt-2 border-t border-gray-200 flex justify-between items-center text-sm font-bold text-black">
-                              <span>Total Amount:</span>
-                              <span className="text-lg font-black" style={{ color: settings.primaryColor || '#000000' }}>
-                                {currencySymbol}{finalTotal.toFixed(2)}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })()}
+                      {/* Resumo do Pedido */}
+                      <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 shadow-2xs space-y-2 text-xs">
+                        <div className="flex justify-between text-gray-700">
+                          <span>Subtotal dos Itens:</span>
+                          <span className="font-bold text-black">{currencySymbol}{cartTotal.toFixed(2)}</span>
+                        </div>
+                        <div className="pt-2 border-t border-gray-200 flex justify-between items-center text-sm font-bold text-black">
+                          <span>Total do Pedido:</span>
+                          <span className="text-lg font-black" style={{ color: settings.primaryColor || '#000000' }}>
+                            {currencySymbol}{cartTotal.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
 
                       <div className="flex gap-3 pt-4">
                         <button 
@@ -3863,9 +3543,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           className={`flex-grow py-4 rounded-xl font-bold text-lg shadow-xl transition-transform active:scale-95 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                           style={{ backgroundColor: settings.primaryColor || '#865d39', color: getContrastText(settings.primaryColor || '#865d39') }}
                         >
-                          {isSubmitting 
-                            ? (settings.language === 'en' ? 'Processing...' : 'Processando...') 
-                            : t.finish}
+                          {isSubmitting ? 'Processando...' : t.finish}
                         </button>
                       </div>
                     </form>
@@ -3924,11 +3602,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       {selectedProductForDetails.trackStock && (
                         (selectedProductForDetails.stockQuantity ?? 0) > 0 ? (
                           <span className="inline-block px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-100 text-amber-900 border border-amber-200">
-                            {selectedProductForDetails.stockQuantity} {selectedProductForDetails.stockQuantity === 1 ? 'unit ready in stock' : 'units ready in stock'}
+                            {selectedProductForDetails.stockQuantity} {selectedProductForDetails.stockQuantity === 1 ? 'unidade em estoque' : 'unidades em estoque'}
                           </span>
                         ) : (
                           <span className="inline-block px-2.5 py-1 text-xs font-bold rounded-lg bg-red-100 text-red-700 border border-red-200">
-                            Sold Out
+                            Esgotado
                           </span>
                         )
                       )}
@@ -3942,16 +3620,16 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
 
                   {/* Extended Description Section (shown first) */}
                   <div className="space-y-2 text-black">
-                    <h3 className="text-xs font-black uppercase tracking-wider text-black/60">Product Description</h3>
+                    <h3 className="text-xs font-black uppercase tracking-wider text-black/60">Descrição do Produto</h3>
                     <p className="text-sm leading-relaxed text-black/80 font-medium whitespace-pre-wrap">
-                      {selectedProductForDetails.description || 'No detailed specifications provided.'}
+                      {selectedProductForDetails.description || 'Nenhuma especificação detalhada informada.'}
                     </p>
                   </div>
 
                   {/* Ingredients Section */}
                   {selectedProductForDetails.ingredients && (
                     <div className="space-y-1.5 pt-3 border-t border-gray-200/40 text-black">
-                      <h3 className="text-xs font-black uppercase tracking-wider text-black/60">Ingredients</h3>
+                      <h3 className="text-xs font-black uppercase tracking-wider text-black/60">Ingredientes</h3>
                       <p className="text-xs leading-relaxed text-black/75 font-medium whitespace-pre-wrap">
                         {selectedProductForDetails.ingredients}
                       </p>
@@ -3965,34 +3643,34 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                         <div className="flex items-center justify-between flex-wrap gap-1">
                           <span className="text-xl font-bold text-amber-950 block font-serif">
                             {selectedProductForDetails.price > 0 
-                              ? `Base ${currencySymbol}${selectedProductForDetails.price.toFixed(2)} + items` 
-                              : `Box (${selectedProductForDetails.boxCapacity || 24} units)`}
+                              ? `Base ${currencySymbol}${selectedProductForDetails.price.toFixed(2)} + itens` 
+                              : `Caixa (${selectedProductForDetails.boxCapacity || 24} unidades)`}
                           </span>
                           <span className="text-[11px] font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-200">
-                            Price calculated per item
+                            Preço calculado por item
                           </span>
                         </div>
                         <p className="text-[11px] text-black/60 font-semibold leading-relaxed">
-                          Choose the flavors below to assemble your box. Each unit is added to the final total.
+                          Escolha os sabores abaixo para montar sua caixa. Cada unidade é somada ao total final.
                         </p>
                       </div>
                     ) : (selectedProductForDetails.isCustomCake || selectedProductForDetails.priceType === 'consult' || (!selectedProductForDetails.price && !selectedProductForDetails.oldPrice && (!selectedProductForDetails.sizes || selectedProductForDetails.sizes.length === 0))) ? (
                       <div className="space-y-1">
                         <span className="text-xl font-bold text-amber-950 block font-serif">
-                          On Request
+                          Sob Consulta
                         </span>
                         <p className="text-[11px] text-black/60 font-semibold leading-relaxed">
-                          Configure your preferences by clicking to add/customize.
+                          Configure suas preferências clicando para adicionar/personalizar.
                         </p>
                       </div>
                     ) : selectedProductForDetails.sizes && selectedProductForDetails.sizes.length > 0 ? (
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <p className="text-xs font-black text-black/80 uppercase tracking-wider">
-                            Choose package size / quantity:
+                            Escolha o tamanho / quantidade:
                           </p>
                           <span className="text-[10px] font-bold text-amber-900/60 bg-amber-500/10 px-2 py-0.5 rounded-full">
-                            {selectedProductForDetails.sizes.length} options available
+                            {selectedProductForDetails.sizes.length} opções disponíveis
                           </span>
                         </div>
                         <div className="space-y-2.5">
@@ -4031,7 +3709,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                           ? "bg-amber-50 text-amber-900 border-amber-200" 
                                           : "bg-red-100 text-red-700 border-red-200"
                                       )}>
-                                        {s.stockQuantity > 0 ? `${s.stockQuantity} units` : 'Sold Out'}
+                                        {s.stockQuantity > 0 ? `${s.stockQuantity} unid.` : 'Esgotado'}
                                       </span>
                                     )}
                                   </div>
@@ -4071,7 +3749,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                           ? "bg-amber-50 text-amber-900 border-amber-200" 
                                           : "bg-red-100 text-red-700 border-red-200"
                                       )}>
-                                        {s.stockQuantity > 0 ? `${s.stockQuantity} units` : 'Sold Out'}
+                                        {s.stockQuantity > 0 ? `${s.stockQuantity} unid.` : 'Esgotado'}
                                       </span>
                                     )}
                                   </div>
@@ -4092,7 +3770,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                 <div className="flex items-center gap-2 shrink-0">
                                   {isSizeOutOfStock ? (
                                     <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-gray-100 text-gray-400 border border-gray-200">
-                                      Sold Out
+                                      Esgotado
                                     </span>
                                   ) : qty > 0 ? (
                                     <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-full border border-gray-200">
@@ -4100,7 +3778,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                         type="button"
                                         onClick={() => decrementSizeQty(selectedProductForDetails, s)}
                                         className="w-8 h-8 rounded-full bg-white hover:bg-gray-50 flex items-center justify-center text-black shadow-sm cursor-pointer active:scale-95 transition-all focus:outline-none"
-                                        aria-label="Decrease quantity"
+                                        aria-label="Diminuir quantidade"
                                       >
                                         <Minus size={14} />
                                       </button>
@@ -4110,7 +3788,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                         onClick={() => incrementSizeQty(selectedProductForDetails, s)}
                                         className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-md cursor-pointer active:scale-95 transition-all focus:outline-none"
                                         style={{ backgroundColor: settings.primaryColor || '#865d39' }}
-                                        aria-label="Increase quantity"
+                                        aria-label="Aumentar quantidade"
                                       >
                                         <Plus size={14} />
                                       </button>
@@ -4123,7 +3801,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                       style={{ backgroundColor: settings.primaryColor || '#865d39', color: getContrastText(settings.primaryColor || '#865d39') }}
                                     >
                                       <Plus size={12} />
-                                      <span>Add</span>
+                                      <span>Adicionar</span>
                                     </button>
                                   )}
                                 </div>
@@ -4173,11 +3851,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                 <span className="w-5 h-5 rounded-full bg-amber-800 text-white text-[10px] font-bold flex items-center justify-center">
                                   {doughStep}
                                 </span>
-                                Choose Batter / Dough Flavor *
+                                Escolha o Sabor da Massa *
                               </label>
                               {selectedCupcakeDough && (
                                 <span className="text-[11px] font-bold text-amber-800 bg-amber-100/70 px-2 py-0.5 rounded-full">
-                                  Selected: {selectedCupcakeDough}
+                                  Selecionado: {selectedCupcakeDough}
                                 </span>
                               )}
                             </div>
@@ -4213,11 +3891,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                 <span className="w-5 h-5 rounded-full bg-amber-800 text-white text-[10px] font-bold flex items-center justify-center">
                                   {fillingStep}
                                 </span>
-                                Choose Filling Option *
+                                Escolha a Opção de Recheio *
                               </label>
                               {selectedCupcakeFilling && (
                                 <span className="text-[11px] font-bold text-amber-800 bg-amber-100/70 px-2 py-0.5 rounded-full">
-                                  Selected: {selectedCupcakeFilling}
+                                  Selecionado: {selectedCupcakeFilling}
                                 </span>
                               )}
                             </div>
@@ -4253,11 +3931,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                 <span className="w-5 h-5 rounded-full bg-amber-800 text-white text-[10px] font-bold flex items-center justify-center">
                                   {frostingStep}
                                 </span>
-                                Choose Frosting / Topping *
+                                Escolha a Cobertura *
                               </label>
                               {selectedCupcakeFrosting && (
                                 <span className="text-[11px] font-bold text-amber-800 bg-amber-100/70 px-2 py-0.5 rounded-full">
-                                  Selected: {selectedCupcakeFrosting}
+                                  Selecionado: {selectedCupcakeFrosting}
                                 </span>
                               )}
                             </div>
@@ -4293,11 +3971,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                 <span className="w-5 h-5 rounded-full bg-amber-800 text-white text-[10px] font-bold flex items-center justify-center">
                                   {flavorStep}
                                 </span>
-                                Choose Flavor *
+                                Escolha o Sabor *
                               </label>
                               {selectedCupcakeFlavor && (
                                 <span className="text-[11px] font-bold text-amber-800 bg-amber-100/70 px-2 py-0.5 rounded-full">
-                                  Selected: {selectedCupcakeFlavor}
+                                  Selecionado: {selectedCupcakeFlavor}
                                 </span>
                               )}
                             </div>
@@ -4359,12 +4037,12 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                               <span className="text-xl">🎁</span>
                               <div>
                                 <h4 className="text-sm font-black uppercase tracking-wider text-amber-950 font-serif">
-                                  Build Your Box ({capacity} units)
+                                  Monte sua Caixa ({capacity} unidades)
                                 </h4>
                                 <p className="text-[11px] text-amber-900/80 font-medium">
                                   {maxFlavorsLimit !== null 
-                                    ? `Choose up to ${maxFlavorsLimit} different flavors to fill your ${capacity}-piece box.`
-                                    : `Select your flavors below to fill your ${capacity}-piece box.`}
+                                    ? `Escolha até ${maxFlavorsLimit} sabores diferentes para completar sua caixa de ${capacity} unidades.`
+                                    : `Selecione os sabores abaixo para completar sua caixa de ${capacity} unidades.`}
                                 </p>
                               </div>
                             </div>
@@ -4380,12 +4058,12 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                 {isComplete ? (
                                   <>
                                     <Check size={12} className="stroke-[3]" />
-                                    <span>Box Complete ({currentTotalUnits}/{capacity})</span>
+                                    <span>Caixa Completa ({currentTotalUnits}/{capacity})</span>
                                   </>
                                 ) : isOver ? (
-                                  <span>Limit Exceeded ({currentTotalUnits}/{capacity})</span>
+                                  <span>Limite Excedido ({currentTotalUnits}/{capacity})</span>
                                 ) : (
-                                  <span>{currentTotalUnits} of {capacity} units selected</span>
+                                  <span>{currentTotalUnits} de {capacity} un. selecionadas</span>
                                 )}
                               </span>
                             </div>
@@ -4405,11 +4083,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                             <div className="flex items-center justify-between text-[11px] font-bold text-amber-950">
                               <span>
                                 {isComplete 
-                                  ? '✓ All units chosen! Ready to add.' 
-                                  : `${remainingUnits} unit${remainingUnits === 1 ? '' : 's'} remaining to complete box`}
+                                  ? '✓ Todas as unidades escolhidas! Pronto para adicionar.' 
+                                  : `Faltam ${remainingUnits} unidade${remainingUnits === 1 ? '' : 's'} para completar a caixa`}
                               </span>
                               <span className="font-serif font-black text-sm text-amber-950">
-                                Box Total: {currencySymbol}{totalBoxPrice.toFixed(2)}
+                                Total da Caixa: {currencySymbol}{totalBoxPrice.toFixed(2)}
                               </span>
                             </div>
                           </div>
@@ -4417,9 +4095,9 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           {/* Variety limit badge */}
                           {maxFlavorsLimit !== null && (
                             <div className="flex items-center justify-between text-[11px] font-semibold text-amber-950 bg-amber-100/70 px-3 py-1.5 rounded-xl border border-amber-200/80">
-                              <span>Different Flavors Allowed:</span>
+                              <span>Sabores Diferentes Permitidos:</span>
                               <span className="font-bold">
-                                {chosenFlavorsCount} of {maxFlavorsLimit} chosen
+                                {chosenFlavorsCount} de {maxFlavorsLimit} escolhido(s)
                               </span>
                             </div>
                           )}
@@ -4428,17 +4106,17 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                         {/* Flavors List */}
                         <div className="space-y-2">
                           <label className="text-xs font-black uppercase tracking-wider text-black/80 flex items-center justify-between">
-                            <span>Choose Flavors & Quantities:</span>
+                            <span>Escolha os Sabores e Quantidades:</span>
                             <span className="text-[11px] text-gray-500 font-semibold normal-case">
                               {maxFlavorsLimit !== null 
-                                ? `Max ${maxFlavorsLimit} flavors • ${capacity} units total`
-                                : `Max capacity: ${capacity} units`}
+                                ? `Máx. ${maxFlavorsLimit} sabores • ${capacity} un. no total`
+                                : `Capacidade máxima: ${capacity} unidades`}
                             </span>
                           </label>
 
                           {flavors.length === 0 ? (
                             <p className="text-xs text-gray-500 italic p-4 bg-white/70 rounded-xl border border-dashed border-gray-300 text-center">
-                              No flavors configured for this box yet.
+                              Nenhum sabor configurado para esta caixa ainda.
                             </p>
                           ) : (
                             <div className="grid grid-cols-1 gap-2 max-h-72 overflow-y-auto pr-1">
@@ -4469,12 +4147,12 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                         </p>
                                         {isLockedByVariety && (
                                           <span className="text-[9px] font-bold text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded">
-                                            Limit reached
+                                            Limite atingido
                                           </span>
                                         )}
                                       </div>
                                       <p className="text-[11px] font-extrabold text-amber-900 mt-0.5">
-                                        {unitPrice > 0 ? `+${currencySymbol}${unitPrice.toFixed(2)} / unit` : 'Included'}
+                                        {unitPrice > 0 ? `+${currencySymbol}${unitPrice.toFixed(2)} / un.` : 'Incluso'}
                                       </p>
                                     </div>
 
@@ -4495,7 +4173,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                             ? "bg-white hover:bg-gray-100 text-black border-gray-300 active:scale-95 cursor-pointer shadow-xs"
                                             : "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-40"
                                         )}
-                                        aria-label="Decrease quantity"
+                                        aria-label="Diminuir quantidade"
                                       >
                                         <Minus size={12} />
                                       </button>
@@ -4509,7 +4187,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                         disabled={isAddDisabled}
                                         onClick={() => {
                                           if (isLockedByVariety) {
-                                            toast.error(`You can choose up to ${maxFlavorsLimit} different flavors for this box!`);
+                                            toast.error(`Você pode escolher até ${maxFlavorsLimit} sabores diferentes para esta caixa!`);
                                             return;
                                           }
                                           if (currentTotalUnits < capacity) {
@@ -4529,7 +4207,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                           backgroundColor: settings.primaryColor || '#865d39',
                                           color: getContrastText(settings.primaryColor || '#865d39')
                                         } : {}}
-                                        aria-label="Increase quantity"
+                                        aria-label="Aumentar quantidade"
                                       >
                                         <Plus size={12} />
                                       </button>
@@ -4547,12 +4225,12 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   {/* Custom Cake Options in Details Modal */}
                   {selectedProductForDetails.isCustomCake && (
                     <div className="border-t border-gray-200/30 pt-6 space-y-6">
-                      <h4 className="text-sm font-black uppercase tracking-wider text-black/60">Cake Customization</h4>
+                      <h4 className="text-sm font-black uppercase tracking-wider text-black/60">Personalização do Bolo</h4>
                       
                       {/* Size Selection */}
                       {cakeSizesList.length > 0 && (
                         <div className="space-y-3">
-                          <p className="text-xs font-bold text-black/60">Size / Slices / Weight</p>
+                          <p className="text-xs font-bold text-black/60">Tamanho / Fatias / Peso</p>
                           <div className="grid grid-cols-1 gap-2">
                             {cakeSizesList.map((sizeOpt, idx) => {
                               const isSelected = selectedCakeSize === sizeOpt;
@@ -4584,7 +4262,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       {/* Dough Selection */}
                       {cakeDoughsList.length > 0 && (
                         <div className="space-y-3">
-                          <p className="text-xs font-bold text-black/60">Dough Selection</p>
+                          <p className="text-xs font-bold text-black/60">Escolha da Massa</p>
                           <div className="grid grid-cols-2 gap-2">
                             {cakeDoughsList.map((doughOpt, idx) => {
                               const isSelected = selectedDough === doughOpt;
@@ -4617,8 +4295,8 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       {cakeFillingsList.length > 0 && (
                         <div className="space-y-3">
                           <div className="flex justify-between items-baseline">
-                            <p className="text-xs font-bold text-black/60">Filling Options</p>
-                            <span className="text-[10px] text-gray-500 font-bold">Choose up to {settings.cakeFillingsMax || 2}</span>
+                            <p className="text-xs font-bold text-black/60">Opções de Recheio</p>
+                            <span className="text-[10px] text-gray-500 font-bold">Escolha até {settings.cakeFillingsMax || 2}</span>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {cakeFillingsList.map((fillingOpt, idx) => {
@@ -4633,7 +4311,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                     } else {
                                       const maxFillings = settings.cakeFillingsMax || 2;
                                       if (selectedFillings.length >= maxFillings) {
-                                        toast.error(`You can choose a maximum of ${maxFillings} fillings!`);
+                                        toast.error(`Você pode escolher no máximo ${maxFillings} recheios!`);
                                         return;
                                       }
                                       setSelectedFillings([...selectedFillings, fillingOpt]);
@@ -4662,7 +4340,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       {/* Toppings Selection */}
                       {cakeToppingsList.length > 0 && (
                         <div className="space-y-3">
-                          <p className="text-xs font-bold text-black/60">Topping / Frosting Selection</p>
+                          <p className="text-xs font-bold text-black/60">Escolha da Cobertura</p>
                           <div className="grid grid-cols-2 gap-2">
                             {cakeToppingsList.map((toppingOpt, idx) => {
                               const isSelected = selectedTopping === toppingOpt;
@@ -4694,7 +4372,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       {/* Topper Selection */}
                       {cakeToppersList.length > 0 && (
                         <div className="space-y-3">
-                          <p className="text-xs font-bold text-black/60">Cake Topper</p>
+                          <p className="text-xs font-bold text-black/60">Topper de Bolo</p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {cakeToppersList.map((topperOpt, idx) => {
                               const isSelected = selectedTopper === topperOpt;
@@ -4735,8 +4413,8 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           return (
                             <div className="space-y-3 pt-2">
                               <div className="space-y-0.5">
-                                <p className="text-xs font-bold text-black/80">Select One of the Images as Visual Reference</p>
-                                <p className="text-[10px] text-gray-500 font-semibold">Please choose one of the photos below as the visual reference for your cake:</p>
+                                <p className="text-xs font-bold text-black/80">Selecione Uma das Imagens como Referência Visual</p>
+                                <p className="text-[10px] text-gray-500 font-semibold">Escolha uma das fotos abaixo como referência visual para o seu bolo:</p>
                               </div>
 
                               {/* 1. Images Grid */}
@@ -4757,7 +4435,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                     >
                                       <img
                                         src={img}
-                                        alt={`Style ${idx + 1}`}
+                                        alt={`Estilo ${idx + 1}`}
                                         className="w-full h-full object-cover"
                                         referrerPolicy="no-referrer"
                                       />
@@ -4776,7 +4454,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                 })}
                               </div>
 
-                              {/* 2. Button "I didn't find the reference I'm looking for" placed below the images */}
+                              {/* 2. Button placed below the images */}
                               <div className="w-full pt-1">
                                 <button
                                   type="button"
@@ -4794,20 +4472,20 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                   }}
                                 >
                                   {isNoRefSelected ? <Check size={14} /> : <HelpCircle size={14} />}
-                                  <span>{isNoRefSelected ? "✓ Selected: I didn't find the reference I'm looking for" : "I didn't find the reference I'm looking for"}</span>
+                                  <span>{isNoRefSelected ? "✓ Selecionado: Não encontrei a referência que procuro" : "Não encontrei a referência que procuro"}</span>
                                 </button>
                               </div>
 
                               {/* 3. Special Notes & Observations field placed below the button */}
                               <div className="space-y-1.5 pt-1">
                                 <label className="text-xs font-bold text-black/80 flex items-center justify-between">
-                                  <span>Special Notes & Observations</span>
-                                  <span className="text-[10px] text-gray-500 font-normal">Optional</span>
+                                  <span>Observações e Notas Especiais</span>
+                                  <span className="text-[10px] text-gray-500 font-normal">Opcional</span>
                                 </label>
                                 <textarea
                                   value={customCakeObservation}
                                   onChange={(e) => setCustomCakeObservation(e.target.value)}
-                                  placeholder="Describe colors, theme details, names, ages, or any custom instructions here..."
+                                  placeholder="Descreva cores, detalhes do tema, nomes, idades ou quaisquer instruções especiais aqui..."
                                   rows={2}
                                   className="w-full p-2.5 rounded-xl border border-gray-300 focus:border-black/50 focus:ring-1 focus:ring-black/20 focus:outline-none text-xs text-black placeholder:text-gray-400 bg-white resize-none shadow-sm"
                                 />
@@ -4826,7 +4504,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     if (!hasExclusions && !hasSides) return null;
                     return (
                       <div className="border-t border-gray-200/30 pt-6 space-y-6">
-                        <h4 className="text-sm font-black uppercase tracking-wider text-black/60">Customize Meal</h4>
+                        <h4 className="text-sm font-black uppercase tracking-wider text-black/60">Personalizar Refeição</h4>
                         
                         {/* Exclusions */}
                         {selectedProductForDetails.ingredients && (() => {
@@ -4898,7 +4576,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                   <div className="flex flex-col min-w-0 pr-2">
                                     <span className="font-bold text-black truncate">{side.name}</span>
                                     <span className="text-[10px] text-gray-500 font-extrabold mt-0.5">
-                                      {side.price > 0 ? `+ ${currencySymbol}${side.price.toFixed(2)}` : 'Free'}
+                                      {side.price > 0 ? `+ ${currencySymbol}${side.price.toFixed(2)}` : 'Grátis'}
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-2.5">
@@ -4936,7 +4614,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                 {swapSides.length > 0 && (
                                   <div className="space-y-2">
                                     <p className="text-xs font-bold text-amber-800">
-                                      Swap Options
+                                      Opções de Substituição
                                     </p>
                                     <div className="grid grid-cols-1 gap-1.5">
                                       {swapSides.map(renderSideItem)}
@@ -4955,7 +4633,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   {selectedProductForDetails.isCustomSandwich && (
                     <div className="border-t border-gray-200/30 pt-6 space-y-6">
                       <h4 className="text-sm font-black uppercase tracking-wider text-black/60">
-                        {settings.language === 'en' ? 'Custom Options & Flavors' : 'Opções e Sabores Personalizados'}
+                        Opções e Sabores Personalizados
                       </h4>
                       
                       {/* Fillings Selection for Custom Sandwich */}
@@ -4968,7 +4646,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                         return (
                           <div className="space-y-4">
                             <p className="text-xs font-bold text-black/60">
-                              {settings.language === 'en' ? 'Select Quantities per Option' : 'Selecione as Quantidades por Opção'}
+                              Selecione as Quantidades por Opção
                             </p>
                             <div className="grid grid-cols-1 gap-2.5">
                               {fillingsList.map((fillingOpt, idx) => {
@@ -5043,7 +4721,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   return (
                     <div id="details-modal-qty-container" className="flex items-center justify-between bg-white/50 p-3 rounded-xl border border-white/10">
                       <span id="details-modal-qty-label" className="text-xs font-bold text-black uppercase tracking-wider">
-                        {settings.language === 'en' ? 'Quantity' : 'Quantidade'}
+                        Quantidade
                       </span>
                       <div className="flex items-center gap-2.5">
                         <button
@@ -5091,14 +4769,14 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           onClick={() => setSelectedProductForDetails(null)}
                           className="px-5 py-3 rounded-xl border border-black/15 bg-white hover:bg-gray-50 text-black font-serif font-bold text-xs cursor-pointer transition-all focus:outline-none text-center"
                         >
-                          ← Back to Menu
+                          ← Voltar ao Cardápio
                         </button>
                         <button
                           type="button"
                           onClick={() => {
                             if (!hasItemsInCart && cart.length === 0) {
                               toast.error(
-                                'Please select at least one option to add to cart, or click Back to Menu.'
+                                'Selecione pelo menos uma opção para adicionar ao carrinho ou clique em Voltar ao Cardápio.'
                               );
                               return;
                             }
@@ -5109,9 +4787,9 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           style={{ backgroundColor: settings.primaryColor || '#865d39', color: getContrastText(settings.primaryColor || '#865d39') }}
                         >
                           {isBelowMin ? (
-                            <span>View Cart • Needed: {currencySymbol}{diff.toFixed(2)}</span>
+                            <span>Ver Carrinho • Falta: {currencySymbol}{diff.toFixed(2)}</span>
                           ) : (
-                            <span>View Cart ({currencySymbol}{cartTotal.toFixed(2)})</span>
+                            <span>Ver Carrinho ({currencySymbol}{cartTotal.toFixed(2)})</span>
                           )}
                         </button>
                       </div>
@@ -5169,35 +4847,35 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
 
                   const getButtonLabel = () => {
                     if (isOutOfStock) {
-                      return 'Sold Out';
+                      return 'Esgotado';
                     }
                     if (isCustomBoxOpt) {
                       if (currentBoxUnits < boxCapacity) {
                         const missing = boxCapacity - currentBoxUnits;
-                        return `Select ${missing} More ${missing === 1 ? 'Unit' : 'Units'} (${currentBoxUnits}/${boxCapacity})`;
+                        return `Selecione Mais ${missing} ${missing === 1 ? 'Unidade' : 'Unidades'} (${currentBoxUnits}/${boxCapacity})`;
                       } else if (currentBoxUnits > boxCapacity) {
-                        return `Remove ${currentBoxUnits - boxCapacity} Units (Max ${boxCapacity})`;
+                        return `Remova ${currentBoxUnits - boxCapacity} Unidades (Máx ${boxCapacity})`;
                       }
-                      return `Add Box to Order • ${currencySymbol}${totalCalculatedBoxPrice.toFixed(2)}`;
+                      return `Adicionar Caixa ao Pedido • ${currencySymbol}${totalCalculatedBoxPrice.toFixed(2)}`;
                     }
                     if (isCustomCakeOpt && isCakeIncomplete) {
-                      return 'Complete Cake Options';
+                      return 'Complete as Opções do Bolo';
                     }
                     if (selectedProductForDetails.isCustomCupcake && isCupcakeIncomplete) {
                       const needsDough = hasCupcakeDoughs && !selectedCupcakeDough;
                       const needsFilling = hasCupcakeFillings && !selectedCupcakeFilling;
                       const needsFrosting = hasCupcakeFrostings && !selectedCupcakeFrosting;
                       const needsFlavor = hasCupcakeFlavors && !selectedCupcakeFlavor;
-                      if (needsDough) return 'Choose Batter First';
-                      if (needsFilling) return 'Choose Filling First';
-                      if (needsFrosting) return 'Choose Frosting First';
-                      if (needsFlavor) return 'Choose Flavor First';
-                      return 'Choose Options First';
+                      if (needsDough) return 'Escolha a Massa Primeiro';
+                      if (needsFilling) return 'Escolha o Recheio Primeiro';
+                      if (needsFrosting) return 'Escolha a Cobertura Primeiro';
+                      if (needsFlavor) return 'Escolha o Sabor Primeiro';
+                      return 'Escolha as Opções Primeiro';
                     }
                     if (selectedProductForDetails.isCustomSandwich && isSandwichIncomplete) {
-                      return 'Select Option First';
+                      return 'Selecione uma Opção Primeiro';
                     }
-                    return 'Add to Order';
+                    return 'Adicionar ao Pedido';
                   };
 
                   const isDisabled = isOutOfStock || !!isCakeIncomplete || !!isCupcakeIncomplete || !!isSandwichIncomplete || !!isBoxIncomplete;
@@ -5213,7 +4891,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                         onClick={() => setSelectedProductForDetails(null)}
                         className="px-5 py-3 rounded-xl border border-black/10 bg-white hover:bg-gray-50 text-black font-serif font-bold text-xs cursor-pointer transition-all border-0 focus:outline-none"
                       >
-                        Close
+                        Fechar
                       </button>
                       <button
                         type="button"
@@ -5225,7 +4903,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           } else {
                             addToCart(selectedProductForDetails, customItemQuantity);
                             setSelectedProductForDetails(null);
-                            toast.success('Item added to cart!');
+                            toast.success('Item adicionado ao carrinho!');
                           }
                         }}
                         className={cn(
@@ -5280,7 +4958,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   )}
                   <div className="min-w-0 flex-1">
                     <span className="text-[9px] sm:text-[10px] uppercase font-black px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-950 inline-block mb-0.5">
-                      Customizable Combo
+                      Combo Personalizável
                     </span>
                     <h3 className="font-serif font-bold text-sm sm:text-lg text-gray-900 truncate leading-tight">
                       {selectedComboProduct.title}
@@ -5290,7 +4968,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
 
                 <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
                   <div className="text-right">
-                    <span className="text-[9px] uppercase font-bold text-gray-500 block leading-none">Price</span>
+                    <span className="text-[9px] uppercase font-bold text-gray-500 block leading-none">Preço</span>
                     <span className="font-serif font-black text-sm sm:text-lg text-gray-900 whitespace-nowrap">
                       {currencySymbol} {(selectedComboProduct.price > 0 ? selectedComboProduct.price : (selectedComboProduct.oldPrice || 0)).toFixed(2)}
                     </span>
@@ -5298,7 +4976,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   <button 
                     onClick={() => setSelectedComboProduct(null)} 
                     className="p-2 hover:bg-gray-200/60 rounded-full transition-colors text-gray-600 hover:text-black shrink-0 cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center border-0 bg-transparent"
-                    aria-label="Close"
+                    aria-label="Fechar"
                   >
                     <X size={20} />
                   </button>
@@ -5322,13 +5000,13 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   )}>
                     <div className="flex items-center justify-between text-xs font-black uppercase tracking-wide">
                       <span className="flex items-center gap-1.5">
-                        {isComplete ? '✓ Combo Complete!' : `Choose your items/flavors:`}
+                        {isComplete ? '✓ Combo Completo!' : `Escolha seus itens/sabores:`}
                       </span>
                       <span className={cn(
                         "px-2.5 py-0.5 rounded-full text-xs font-bold",
                         isComplete ? "bg-emerald-200 text-emerald-900" : "bg-amber-200 text-amber-900"
                       )}>
-                        {currentTotal} of {targetQty} items selected
+                        {currentTotal} de {targetQty} itens selecionados
                       </span>
                     </div>
 
@@ -5346,15 +5024,15 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     <p className="text-[11px] font-medium leading-tight">
                       {isComplete ? (
                         <span className="text-emerald-800 font-bold">
-                          All set! You selected all {targetQty} items. Click the button below to add to your order.
+                          Tudo certo! Você selecionou todos os {targetQty} itens. Clique no botão abaixo para adicionar ao pedido.
                         </span>
                       ) : remaining > 0 ? (
                         <span className="text-amber-900">
-                          Select <strong>{remaining} more item(s)</strong> to reach the limit of {targetQty} items for this combo.
+                          Selecione mais <strong>{remaining} {remaining === 1 ? 'item' : 'itens'}</strong> para atingir o limite de {targetQty} itens deste combo.
                         </span>
                       ) : (
                         <span className="text-red-700 font-bold">
-                          You exceeded the limit! Please remove {Math.abs(remaining)} item(s).
+                          Você excedeu o limite! Por favor, remova {Math.abs(remaining)} {Math.abs(remaining) === 1 ? 'item' : 'itens'}.
                         </span>
                       )}
                     </p>
@@ -5375,7 +5053,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
                   <input
                     type="text"
-                    placeholder="Search flavor or item..."
+                    placeholder="Buscar sabor ou item..."
                     value={comboSearchTerm}
                     onChange={e => setComboSearchTerm(e.target.value)}
                     className="w-full p-2.5 pl-9 text-xs rounded-xl border border-gray-300 bg-white text-black font-medium focus:ring-2 focus:ring-amber-800/30"
@@ -5412,7 +5090,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   if (availableDishes.length === 0) {
                     return (
                       <div className="text-center py-8 text-xs text-gray-500 font-medium bg-white/50 rounded-2xl border border-dashed border-gray-300 p-4">
-                        No items available for this combo at the moment.
+                        Nenhum item disponível para este combo no momento.
                       </div>
                     );
                   }
@@ -5456,14 +5134,14 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                   className="text-xs font-bold underline hover:opacity-80 flex items-center cursor-pointer pt-0.5"
                                   style={{ color: settings.primaryColor || '#865d39' }}
                                 >
-                                  <span>View Description</span>
+                                  <span>Ver Descrição</span>
                                 </button>
                               </div>
                             </div>
 
                             {/* Stepper Controls */}
                             <div className="flex items-center justify-end w-full sm:w-auto gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100 shrink-0">
-                              <span className="text-[11px] text-gray-500 sm:hidden font-bold">Quantity:</span>
+                              <span className="text-[11px] text-gray-500 sm:hidden font-bold">Quantidade:</span>
                               <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-xl border border-gray-200">
                                 <button
                                   type="button"
@@ -5535,7 +5213,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       onClick={() => setSelectedComboProduct(null)}
                       className="px-5 py-3 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 font-bold text-xs cursor-pointer transition-all"
                     >
-                      Cancel
+                      Cancelar
                     </button>
 
                     <button
@@ -5553,8 +5231,8 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     >
                       <span>
                         {isComplete 
-                          ? `Add Combo (${currentTotal} Items) to Order`
-                          : `Select ${targetQty - currentTotal} item(s) to complete`}
+                          ? `Adicionar Combo (${currentTotal} Itens) ao Pedido`
+                          : `Selecione ${targetQty - currentTotal} ${targetQty - currentTotal === 1 ? 'item' : 'itens'} para completar`}
                       </span>
                     </button>
                   </div>
@@ -5628,7 +5306,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   {/* Extended Description Section (shown first) */}
                   {(selectedDishForNutritionalInfo.description || selectedDishForNutritionalInfo.ingredients) && (
                     <div className="space-y-2 text-black">
-                      <h3 className="text-xs font-black uppercase tracking-wider text-black/60">Product Description</h3>
+                      <h3 className="text-xs font-black uppercase tracking-wider text-black/60">Descrição do Produto</h3>
                       {selectedDishForNutritionalInfo.description && (
                         <p className="text-sm leading-relaxed text-black/80 font-medium whitespace-pre-wrap">
                           {selectedDishForNutritionalInfo.description}
@@ -5638,7 +5316,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                         <p className="text-sm leading-relaxed text-black/80 font-medium whitespace-pre-wrap">
                           {selectedDishForNutritionalInfo.ingredients.toUpperCase().startsWith('INGREDIENTS:') || selectedDishForNutritionalInfo.ingredients.toUpperCase().startsWith('INGREDIENTES:')
                             ? selectedDishForNutritionalInfo.ingredients 
-                            : `INGREDIENTS: ${selectedDishForNutritionalInfo.ingredients}`}
+                            : `INGREDIENTES: ${selectedDishForNutritionalInfo.ingredients}`}
                         </p>
                       )}
                     </div>
@@ -5648,7 +5326,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   {selectedDishForNutritionalInfo.price > 0 && (
                     <div className="p-4 rounded-2xl bg-white/50 border border-white/20">
                       <label className="text-[10px] font-black uppercase text-black/50 block tracking-wider mb-1">
-                        PRICE DETAILS
+                        DETALHES DO PREÇO
                       </label>
                       <div className="flex items-baseline gap-2">
                         <p className="text-2xl font-serif font-black text-black">
@@ -5673,7 +5351,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       {/* Quantity row */}
                       <div className="flex items-center justify-between bg-white/50 p-3 rounded-xl border border-white/10">
                         <span className="text-xs font-bold text-black uppercase tracking-wider">
-                          Quantity in Combo
+                          Quantidade no Combo
                         </span>
                         <div className="flex items-center gap-2.5">
                           <button
@@ -5705,7 +5383,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                             disabled={!canAddMore}
                             onClick={() => {
                               if (!canAddMore) {
-                                toast.error(`You have already reached the limit of ${targetQty} items for this combo!`);
+                                toast.error(`Você já atingiu o limite de ${targetQty} itens para este combo!`);
                                 return;
                               }
                               setComboDishSelections(prev => ({
@@ -5731,7 +5409,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           onClick={() => setSelectedDishForNutritionalInfo(null)}
                           className="px-5 py-3 rounded-xl border border-black/10 bg-white hover:bg-gray-50 text-black font-serif font-bold text-xs cursor-pointer transition-all border-0 focus:outline-none whitespace-nowrap"
                         >
-                          Close
+                          Fechar
                         </button>
                         <button
                           type="button"
@@ -5742,7 +5420,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                             color: getContrastText(settings.primaryColor || '#865d39') 
                           }}
                         >
-                          Confirm & Return to Combo
+                          Confirmar e Voltar ao Combo
                         </button>
                       </div>
                     </>
@@ -5790,7 +5468,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     {selectedProductForCustom.sizes && selectedProductForCustom.sizes.length > 0 && (
                       <div className="space-y-4">
                         <h3 className="text-sm font-bold uppercase tracking-wider text-black">
-                          {settings.language === 'en' ? 'Select Option' : 'Selecione a Opção de Estado'}
+                          Selecione a Opção
                         </h3>
                         <div className="grid grid-cols-1 gap-2.5">
                           {selectedProductForCustom.sizes.map((s) => {
@@ -5845,7 +5523,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       return (
                         <div className="space-y-4 pt-4 border-t border-gray-200/30">
                           <h3 className="text-sm font-bold uppercase tracking-wider text-black">
-                            {settings.language === 'en' ? 'Select Quantities per Option' : 'Selecione as Quantidades por Opção'}
+                            Selecione as Quantidades por Opção
                           </h3>
                           <div className="grid grid-cols-1 gap-2.5">
                             {fillingsList.map((fillingOpt, idx) => {
@@ -5902,7 +5580,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     {/* Size Selection */}
                     {cakeSizesList.length > 0 && (
                       <div className="space-y-4">
-                        <h3 className="text-sm font-serif font-black uppercase tracking-widest text-black/80">Size / Slices / Weight</h3>
+                        <h3 className="text-sm font-serif font-black uppercase tracking-widest text-black/80">Tamanho / Fatias / Peso</h3>
                         <div className="grid grid-cols-1 gap-2.5">
                           {cakeSizesList.map((sizeOpt, idx) => {
                             const isSelected = selectedCakeSize === sizeOpt;
@@ -5936,7 +5614,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     {/* Dough Selection */}
                     {cakeDoughsList.length > 0 && (
                       <div className="space-y-4">
-                        <h3 className="text-sm font-serif font-black uppercase tracking-widest text-black/80">Dough Selection</h3>
+                        <h3 className="text-sm font-serif font-black uppercase tracking-widest text-black/80">Escolha da Massa</h3>
                         <div className="grid grid-cols-2 gap-2.5">
                           {cakeDoughsList.map((doughOpt, idx) => {
                             const isSelected = selectedDough === doughOpt;
@@ -5969,8 +5647,8 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     {cakeFillingsList.length > 0 && (
                       <div className="space-y-4">
                         <div className="flex justify-between items-baseline">
-                          <h3 className="text-sm font-serif font-black uppercase tracking-widest text-black/80">Filling Options</h3>
-                          <span className="text-xs text-gray-500 font-bold">Choose up to {settings.cakeFillingsMax || 2}</span>
+                          <h3 className="text-sm font-serif font-black uppercase tracking-widest text-black/80">Opções de Recheio</h3>
+                          <span className="text-xs text-gray-500 font-bold">Escolha até {settings.cakeFillingsMax || 2}</span>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {cakeFillingsList.map((fillingOpt, idx) => {
@@ -5985,7 +5663,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                   } else {
                                     const maxFillings = settings.cakeFillingsMax || 2;
                                     if (selectedFillings.length >= maxFillings) {
-                                      toast.error(`You can choose a maximum of ${maxFillings} fillings!`);
+                                      toast.error(`Você pode escolher no máximo ${maxFillings} recheios!`);
                                       return;
                                     }
                                     setSelectedFillings([...selectedFillings, fillingOpt]);
@@ -6014,7 +5692,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     {/* Toppings Selection */}
                     {cakeToppingsList.length > 0 && (
                       <div className="space-y-4">
-                        <h3 className="text-sm font-serif font-black uppercase tracking-widest text-black/80">Topping Selection</h3>
+                        <h3 className="text-sm font-serif font-black uppercase tracking-widest text-black/80">Escolha da Cobertura</h3>
                         <div className="grid grid-cols-2 gap-2.5">
                           {cakeToppingsList.map((toppingOpt, idx) => {
                             const isSelected = selectedTopping === toppingOpt;
@@ -6046,7 +5724,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     {/* Topper Selection */}
                     {cakeToppersList.length > 0 && (
                       <div className="space-y-4">
-                        <h3 className="text-sm font-serif font-black uppercase tracking-widest text-black/80">Cake Topper</h3>
+                        <h3 className="text-sm font-serif font-black uppercase tracking-widest text-black/80">Topper de Bolo</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                           {cakeToppersList.map((topperOpt, idx) => {
                             const isSelected = selectedTopper === topperOpt;
@@ -6088,10 +5766,10 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           <div className="space-y-4 pt-2">
                             <div className="space-y-1">
                               <h3 className="text-sm font-serif font-black uppercase tracking-widest text-black/80">
-                                Select One of the Images as Visual Reference
+                                Selecione Uma das Imagens como Referência Visual
                               </h3>
                               <p className="text-[11px] font-semibold text-gray-500 leading-normal">
-                                Please choose one of the photos below as the visual reference for your cake:
+                                Escolha uma das fotos abaixo como referência visual para o seu bolo:
                               </p>
                             </div>
 
@@ -6115,13 +5793,13 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                   >
                                     <img
                                       src={img}
-                                      alt={`Style ${idx + 1}`}
+                                      alt={`Estilo ${idx + 1}`}
                                       className="w-full h-full object-cover select-none"
                                       referrerPolicy="no-referrer"
                                     />
                                     {/* Number Badge */}
                                     <div className="absolute top-2 left-2 bg-black/75 backdrop-blur-sm text-white text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded-full z-10">
-                                      Photo {idx + 1}
+                                      Foto {idx + 1}
                                     </div>
                                     
                                     {/* Select Highlight Overlay */}
@@ -6136,7 +5814,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                           <Check size={18} />
                                         </div>
                                       ) : (
-                                        <span className="text-[9px] font-bold text-white uppercase tracking-widest bg-black/40 px-2 py-1 rounded-full">Select</span>
+                                        <span className="text-[9px] font-bold text-white uppercase tracking-widest bg-black/40 px-2 py-1 rounded-full">Selecionar</span>
                                       )}
                                     </div>
                                   </button>
@@ -6144,7 +5822,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                               })}
                             </div>
 
-                            {/* 2. "I didn't find the reference I'm looking for" Button (placed below the images) */}
+                            {/* 2. Button placed below the images */}
                             <div className="w-full pt-1">
                               <button
                                 type="button"
@@ -6162,20 +5840,20 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                 }}
                               >
                                 {isNoRefSelected ? <Check size={16} /> : <HelpCircle size={16} />}
-                                <span>{isNoRefSelected ? "✓ Selected: I didn't find the reference I'm looking for" : "I didn't find the reference I'm looking for"}</span>
+                                <span>{isNoRefSelected ? "✓ Selecionado: Não encontrei a referência que procuro" : "Não encontrei a referência que procuro"}</span>
                               </button>
                             </div>
 
                             {/* 3. Special Notes & Observations field (placed below the button) */}
                             <div className="space-y-2 pt-1">
                               <label className="text-xs font-bold uppercase tracking-wider text-black/80 flex items-center justify-between">
-                                <span>Special Notes & Observations</span>
-                                <span className="text-[10px] text-gray-500 font-normal">Optional</span>
+                                <span>Observações e Notas Especiais</span>
+                                <span className="text-[10px] text-gray-500 font-normal">Opcional</span>
                               </label>
                               <textarea
                                 value={customCakeObservation}
                                 onChange={(e) => setCustomCakeObservation(e.target.value)}
-                                placeholder="Describe colors, theme details, names, ages, or any custom reference instructions here..."
+                                placeholder="Descreva cores, detalhes do tema, nomes, idades ou quaisquer instruções de referência aqui..."
                                 rows={3}
                                 className="w-full p-3 rounded-2xl border border-gray-200 focus:border-black/50 focus:ring-1 focus:ring-black/20 focus:outline-none text-xs text-black placeholder:text-gray-400 bg-white transition-all resize-none shadow-sm"
                               />
@@ -6191,7 +5869,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     {selectedProductForCustom.sizes && selectedProductForCustom.sizes.length > 0 && (
                       <div className="space-y-4">
                         <h3 className="text-sm font-bold uppercase tracking-wider text-black">
-                          Select Size / Portion
+                          Selecione o Tamanho / Porção
                         </h3>
                         <div className="space-y-2">
                           {selectedProductForCustom.sizes.map((s) => {
@@ -6217,7 +5895,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                           ? "bg-amber-50 text-amber-900 border-amber-200" 
                                           : "bg-red-100 text-red-700 border-red-200"
                                       )}>
-                                        {s.stockQuantity > 0 ? `${s.stockQuantity} units` : 'Sold Out'}
+                                        {s.stockQuantity > 0 ? `${s.stockQuantity} unid.` : 'Esgotado'}
                                       </span>
                                     )}
                                   </div>
@@ -6231,7 +5909,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                 <div className="flex items-center gap-2">
                                   {isSizeOutOfStock ? (
                                     <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-gray-100 text-gray-400 border border-gray-200">
-                                      Sold Out
+                                      Esgotado
                                     </span>
                                   ) : qty > 0 ? (
                                     <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-full border border-gray-200">
@@ -6260,7 +5938,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                                       style={{ backgroundColor: settings.primaryColor || '#865d39', color: getContrastText(settings.primaryColor || '#865d39') }}
                                     >
                                       <Plus size={12} />
-                                      <span>Add</span>
+                                      <span>Adicionar</span>
                                     </button>
                                   )}
                                 </div>
@@ -6343,7 +6021,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                               <div className="flex justify-between items-center">
                                 <span className={qty > 0 ? "text-blue-600" : "text-black"}>{side.name}</span>
                                 <span className="text-xs opacity-60 text-black">
-                                  {side.price > 0 ? `+ ${currencySymbol}${(side.price * (qty > 0 ? qty : 1)).toFixed(2)}` : 'Free'}
+                                  {side.price > 0 ? `+ ${currencySymbol}${(side.price * (qty > 0 ? qty : 1)).toFixed(2)}` : 'Grátis'}
                                 </span>
                               </div>
                               <div className="flex items-center justify-end gap-4">
@@ -6379,7 +6057,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                             {swapSides.length > 0 && (
                               <div className="space-y-4">
                                 <h3 className="text-sm font-bold uppercase tracking-wider text-amber-800">
-                                  Swap Options
+                                  Opções de Substituição
                                 </h3>
                                 <div className="grid grid-cols-1 gap-2">
                                   {swapSides.map(renderSideItem)}
@@ -6398,7 +6076,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                 {selectedProductForCustom && !selectedProductForCustom.isCustomSandwich && (!selectedProductForCustom.sizes || selectedProductForCustom.sizes.length === 0) && (
                   <div id="custom-modal-qty-container" className="flex items-center justify-between mb-4 bg-white/50 p-3.5 rounded-2xl border border-gray-200/50">
                     <span id="custom-modal-qty-label" className="text-sm font-bold text-black uppercase tracking-wider">
-                      Quantity
+                      Quantidade
                     </span>
                     <div className="flex items-center gap-3">
                       <button
@@ -6448,7 +6126,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       style={{ backgroundColor: settings.primaryColor || '#865d39', color: getContrastText(settings.primaryColor || '#865d39') }}
                     >
                       {isIncomplete ? (
-                        <span>{isSandwichIncomplete ? 'Select an option first' : 'Select all options first'}</span>
+                        <span>{isSandwichIncomplete ? 'Selecione uma opção primeiro' : 'Selecione todas as opções primeiro'}</span>
                       ) : (
                         <>
                           <span>{t.addToCart}</span>
@@ -6505,9 +6183,9 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   </div>
                   <div>
                     <h2 className="text-base sm:text-lg font-bold uppercase tracking-wider leading-tight text-white" style={{ color: '#ffffff' }}>
-                      DETOX KIT INSTRUCTIONS
+                      INSTRUÇÕES DO KIT DETOX
                     </h2>
-                    <p className="text-[11px] text-white/80 font-medium">Complete guide for your detox protocol</p>
+                    <p className="text-[11px] text-white/80 font-medium">Guia completo para o seu protocolo detox</p>
                   </div>
                 </div>
                 <button 
@@ -6526,11 +6204,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                 <div className="bg-[#4b6757]/5 p-4 rounded-2xl border border-[#4b6757]/15 space-y-1.5">
                   <div className="flex items-center gap-2 font-extrabold text-[#4b6757] text-xs uppercase tracking-wider">
                     <Snowflake size={15} />
-                    <span>1. Storage Instructions:</span>
+                    <span>1. Instruções de Armazenamento:</span>
                   </div>
                   <p className="text-xs text-gray-700 leading-relaxed font-medium">
-                    Keep all products in the freezer at <strong>0°F (-18°C) or lower</strong>.<br />
-                    Only remove what you will consume on the day.
+                    Mantenha todos os produtos no freezer a <strong>0°F (-18°C) ou menos</strong>.<br />
+                    Retire apenas o que você for consumir no dia.
                   </p>
                 </div>
 
@@ -6538,28 +6216,28 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                 <div className="bg-emerald-500/5 p-4 rounded-2xl border border-emerald-500/20 space-y-2.5">
                   <div className="flex items-center gap-2 font-extrabold text-emerald-800 text-xs uppercase tracking-wider">
                     <Clock size={15} className="text-emerald-700" />
-                    <span>2. Daily Consumption Routine:</span>
+                    <span>2. Rotina Diária de Consumo:</span>
                   </div>
                   <div className="space-y-1.5 text-xs text-gray-800 font-medium pl-1">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-[#4b6757]" />
-                      <span><strong>Breakfast:</strong> Green detox juice</span>
+                      <span><strong>Café da Manhã:</strong> Suco detox verde</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-rose-500" />
-                      <span><strong>Morning Snack:</strong> Red detox juice</span>
+                      <span><strong>Lanche da Manhã:</strong> Suco detox vermelho</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-[#f09249]" />
-                      <span><strong>Lunch:</strong> 1 meal</span>
+                      <span><strong>Almoço:</strong> 1 refeição</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-amber-400" />
-                      <span><strong>Afternoon Snack:</strong> Yellow detox juice</span>
+                      <span><strong>Lanche da Tarde:</strong> Suco detox amarelo</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-teal-600" />
-                      <span><strong>Dinner:</strong> 1 soup / cream</span>
+                      <span><strong>Jantar:</strong> 1 sopa / creme</span>
                     </div>
                   </div>
                 </div>
@@ -6568,10 +6246,10 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                 <div className="bg-amber-500/5 p-4 rounded-2xl border border-amber-500/20 space-y-1.5">
                   <div className="flex items-center gap-2 font-extrabold text-amber-800 text-xs uppercase tracking-wider">
                     <Sparkles size={15} className="text-amber-600" />
-                    <span>3. Detox Juice Preparation:</span>
+                    <span>3. Preparo do Suco Detox:</span>
                   </div>
                   <p className="text-xs text-gray-700 leading-relaxed font-medium">
-                    Blend or dilute the concentrated pulp in a glass with <strong>up to 10 fl oz (300ml) of water or coconut water</strong>.
+                    Bata ou dilua a polpa concentrada em um copo com <strong>até 10 fl oz (300ml) de água ou água de coco</strong>.
                   </p>
                 </div>
 
@@ -6579,10 +6257,10 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                 <div className="bg-orange-500/5 p-4 rounded-2xl border border-orange-500/20 space-y-1.5">
                   <div className="flex items-center gap-2 font-extrabold text-orange-800 text-xs uppercase tracking-wider">
                     <Flame size={15} className="text-orange-600" />
-                    <span>4. Heating Instructions for Meals:</span>
+                    <span>4. Instruções de Aquecimento para Refeições:</span>
                   </div>
                   <p className="text-xs text-gray-700 leading-relaxed font-medium">
-                    Microwave for <strong>6 to 8 minutes</strong>.
+                    Leve ao micro-ondas por <strong>6 a 8 minutos</strong>.
                   </p>
                 </div>
 
@@ -6590,10 +6268,10 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                 <div className="bg-teal-500/5 p-4 rounded-2xl border border-teal-500/20 space-y-1.5">
                   <div className="flex items-center gap-2 font-extrabold text-teal-800 text-xs uppercase tracking-wider">
                     <Utensils size={15} className="text-teal-600" />
-                    <span>5. Heating Instructions for Soups/Creams:</span>
+                    <span>5. Instruções de Aquecimento para Sopas/Cremes:</span>
                   </div>
                   <p className="text-xs text-gray-700 leading-relaxed font-medium">
-                    Microwave for <strong>10 minutes</strong> OR remove from container and heat directly in a saucepan with a little water.
+                    Leve ao micro-ondas por <strong>10 minutos</strong> OU retire do pote e aqueça diretamente em uma panela com um pouco de água.
                   </p>
                 </div>
 
@@ -6601,10 +6279,10 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                 <div className="bg-rose-500/5 p-4 rounded-2xl border border-rose-500/20 space-y-1.5">
                   <div className="flex items-center gap-2 font-extrabold text-rose-800 text-xs uppercase tracking-wider">
                     <Ban size={15} className="text-rose-600" />
-                    <span>6. What NOT to Consume During Detox:</span>
+                    <span>6. O Que NÃO Consumir Durante o Detox:</span>
                   </div>
                   <p className="text-xs text-gray-700 leading-relaxed font-medium">
-                    Alcohol, processed foods, products with gluten, lactose or sugar. Ideally avoid any animal-derived ingredients (meat, eggs, dairy, butter, etc.).
+                    Álcool, alimentos ultraprocessados, produtos com glúten, lactose ou açúcar. Idealmente evite qualquer ingrediente de origem animal (carne, ovos, laticínios, manteiga, etc.).
                   </p>
                 </div>
 
@@ -6612,10 +6290,10 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                 <div className="bg-green-500/5 p-4 rounded-2xl border border-green-500/20 space-y-1.5">
                   <div className="flex items-center gap-2 font-extrabold text-green-800 text-xs uppercase tracking-wider">
                     <Apple size={15} className="text-green-600" />
-                    <span>7. What Can I Consume in Addition to the DETOX KIT?</span>
+                    <span>7. O Que Posso Consumir Além do KIT DETOX?</span>
                   </div>
                   <p className="text-xs text-gray-700 leading-relaxed font-medium">
-                    If you feel hungry between meals, you can add <strong>fruits, fresh vegetables, and raw nuts</strong>.
+                    Se sentir fome entre as refeições, você pode adicionar <strong>frutas, vegetais frescos e castanhas cruas</strong>.
                   </p>
                 </div>
 
@@ -6629,7 +6307,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   className="px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white shadow-md cursor-pointer hover:brightness-110 active:scale-95 transition-all"
                   style={{ backgroundColor: '#4b6757' }}
                 >
-                  Got It
+                  Entendi
                 </button>
               </div>
             </motion.div>
@@ -6671,13 +6349,13 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       className="text-lg sm:text-xl font-serif font-bold !text-white leading-tight"
                       style={{ color: '#ffffff' }}
                     >
-                      Your Diet, Your Way!
+                      Sua Dieta, do Seu Jeito!
                     </h2>
                     <p 
                       className="text-xs !text-white/90 font-sans mt-0.5 font-medium"
                       style={{ color: 'rgba(255, 255, 255, 0.9)' }}
                     >
-                      Custom meal plan crafted for you
+                      Plano alimentar personalizado preparado para você
                     </p>
                   </div>
                 </div>
@@ -6685,7 +6363,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   type="button"
                   onClick={() => setIsCustomDietModalOpen(false)} 
                   className="w-8 h-8 rounded-full bg-black/25 hover:bg-black/40 active:scale-95 flex items-center justify-center text-white cursor-pointer transition-all shrink-0 ml-2 border border-white/10"
-                  aria-label="Close"
+                  aria-label="Fechar"
                 >
                   <X size={18} />
                 </button>
@@ -6698,7 +6376,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     <Check size={20} className="stroke-[3]" />
                   </div>
                   <p className="text-sm font-semibold text-gray-800 leading-relaxed">
-                    Already have a nutritional meal plan from your nutritionist? We prepare your meals exactly as specified in your menu.
+                    Já tem um plano alimentar do seu nutricionista? Preparamos suas refeições exatamente como especificado no seu cardápio.
                   </p>
                 </div>
 
@@ -6709,7 +6387,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   style={{ backgroundColor: settings?.primaryColor || '#865d39' }}
                 >
                   <Check size={18} className="stroke-[3]" />
-                  <span>Send Nutritionist Meal Plan</span>
+                  <span>Enviar Plano do Nutricionista</span>
                 </button>
               </div>
             </motion.div>
@@ -6739,7 +6417,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
               <div className="p-6 border-b border-gray-200/50 flex items-center justify-between bg-white/40 font-serif">
                 <h2 className="text-xl font-black uppercase tracking-tight flex items-center gap-2" style={{ color: settings.primaryColor || '#000000' }}>
                   <Building2 size={24} />
-                  {'CORPORATE & WHOLESALE'}
+                  {'CORPORATIVO E ATACADO'}
                 </h2>
                 <button 
                   onClick={() => setIsDietsModalOpen(false)} 
@@ -6752,12 +6430,12 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
               <div className="p-6 overflow-y-auto space-y-6">
                 <div className="bg-white/50 p-4 rounded-2xl border border-white/40 space-y-2">
                   <p className="text-[11px] font-semibold leading-relaxed text-black/80">
-                    💡 This is our dedicated wholesale scheduling and quote portal. Realize wholesale orders directly without retail premiums! Conditions automatically scale by volume.
+                    💡 Este é nosso portal dedicado para agendamentos e orçamentos no atacado. Faça pedidos no atacado diretamente! As condições escalam automaticamente conforme o volume.
                   </p>
                   
                   {isReturningB2b && (
                     <div className="flex items-center justify-between bg-[#865d39]/10 p-2.5 rounded-xl border border-[#865d39]/20 text-xs mt-1.5">
-                      <span className="font-bold text-[#865d39]">✓ Returning Partner Profile Active</span>
+                      <span className="font-bold text-[#865d39]">✓ Perfil de Parceiro Recorrente Ativo</span>
                       <button 
                         type="button" 
                         onClick={() => {
@@ -6767,11 +6445,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           setB2bPhone('');
                           setB2bAddress('');
                           setIsReturningB2b(false);
-                          toast.info('Profile fields cleared.');
+                          toast.info('Campos do perfil limpos.');
                         }}
                         className="text-[10px] font-extrabold text-red-600 bg-white px-2 py-1 rounded-lg border border-red-200 hover:bg-red-50"
                       >
-                        Reset Profile
+                        Redefinir Perfil
                       </button>
                     </div>
                   )}
@@ -6781,11 +6459,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   {/* Business Name (Nome Fantasia) with autocomplete dropdown */}
                   <div className="space-y-1 relative">
                     <label className="text-[10px] font-extrabold uppercase tracking-wider text-black flex items-center gap-1.5">
-                      <Building2 size={12} /> Nom Fantasie / Business Name *
+                      <Building2 size={12} /> Nome Fantasia / Empresa *
                     </label>
                     <input 
                       type="text" 
-                      placeholder="e.g. Coffee Central or Starbucks L.A."
+                      placeholder="Ex: Coffee Central ou Padaria"
                       className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-xs outline-none text-black font-semibold shadow-sm focus:border-black transition-colors"
                       value={b2bName}
                       onChange={e => {
@@ -6807,7 +6485,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                     {showB2bSearchDropdown && b2bSearchResults.length > 0 && (
                       <div className="absolute top-[100%] left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-40 overflow-y-auto divide-y divide-gray-100 p-1">
                         <div className="text-[9px] font-bold text-gray-400 uppercase p-1.5 tracking-wider bg-gray-50/50">
-                          Recurrent Profiles Found (Click to autofill):
+                          Perfis Recorrentes Encontrados (Clique para preencher):
                         </div>
                         {b2bSearchResults.map((profile, i) => (
                           <button
@@ -6821,11 +6499,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                               setB2bAddress(profile.address || '');
                               setIsReturningB2b(true);
                               setShowB2bSearchDropdown(false);
-                              toast.success(`Autocompleted profile for ${profile.name}!`);
+                              toast.success(`Perfil preenchido automaticamente para ${profile.name}!`);
                             }}
                           >
                             <span className="font-bold text-black">{profile.name}</span>
-                            <span className="text-[10px] text-gray-500 font-normal">Contact: {profile.manager} • Phone: {profile.phone}</span>
+                            <span className="text-[10px] text-gray-500 font-normal">Contato: {profile.manager} • Telefone: {profile.phone}</span>
                           </button>
                         ))}
                       </div>
@@ -6835,11 +6513,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   {/* Responsible Person Manager Name */}
                   <div className="space-y-1">
                     <label className="text-[10px] font-extrabold uppercase tracking-wider text-black flex items-center gap-1.5">
-                      <User size={12} /> Responsible Manager / Contact Name *
+                      <User size={12} /> Gerente Responsável / Nome de Contato *
                     </label>
                     <input 
                       type="text" 
-                      placeholder="e.g. John Smith"
+                      placeholder="Ex: João Silva"
                       className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-xs outline-none text-black font-semibold shadow-sm focus:border-black transition-colors"
                       value={b2bResponsibleName}
                       onChange={e => setB2bResponsibleName(e.target.value)}
@@ -6849,11 +6527,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   {/* Contact Phone */}
                   <div className="space-y-1">
                     <label className="text-[10px] font-extrabold uppercase tracking-wider text-black flex items-center gap-1.5">
-                      <Phone size={12} /> Contact Tel / Phone *
+                      <Phone size={12} /> Telefone de Contato *
                     </label>
                     <input 
                       type="tel" 
-                      placeholder="e.g. (310) 555-0199"
+                      placeholder="Ex: (310) 555-0199"
                       className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-xs outline-none text-black font-semibold shadow-sm focus:border-black transition-colors"
                       value={b2bPhone}
                       onChange={e => setB2bPhone(e.target.value)}
@@ -6863,11 +6541,11 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   {/* Delivery Address */}
                   <div className="space-y-1">
                     <label className="text-[10px] font-extrabold uppercase tracking-wider text-black flex items-center gap-1.5">
-                      <MapPin size={12} /> Commercial Delivery Address *
+                      <MapPin size={12} /> Endereço Comercial (EUA) *
                     </label>
                     <input 
                       type="text" 
-                      placeholder="e.g. 520 Broadway, Santa Monica, CA 90401"
+                      placeholder="Ex: 520 Broadway, Santa Monica, CA 90401"
                       className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-xs outline-none text-black font-semibold shadow-sm focus:border-black transition-colors"
                       value={b2bAddress}
                       onChange={e => setB2bAddress(e.target.value)}
@@ -6877,7 +6555,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                   {/* Delivery Schedule Frequency */}
                   <div className="space-y-1">
                     <label className="text-[10px] font-extrabold uppercase tracking-wider text-black block mb-1">
-                      🚚 Delivery Plan/Frequency *
+                      🚚 Plano / Frequência *
                     </label>
                     <div className="grid grid-cols-2 gap-3">
                       <button 
@@ -6885,47 +6563,47 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                         onClick={() => setB2bFrequency('one-time')}
                         className={`p-3 rounded-xl border text-xs font-bold transition-all text-center flex flex-col items-center justify-center gap-1 ${b2bFrequency === 'one-time' ? 'bg-black text-white border-black shadow-md' : 'bg-white border-gray-300 text-black hover:border-black'}`}
                       >
-                        <span>Single Delivery</span>
-                        <span className="text-[9px] opacity-75 font-normal">One-time Order / Spot</span>
+                        <span>Pedido Único</span>
+                        <span className="text-[9px] opacity-75 font-normal">Pedido Avulso</span>
                       </button>
                       <button 
                         type="button" 
                         onClick={() => setB2bFrequency('weekly')}
                         className={`p-3 rounded-xl border text-xs font-bold transition-all text-center flex flex-col items-center justify-center gap-1 ${b2bFrequency === 'weekly' ? 'bg-black text-white border-black shadow-md' : 'bg-white border-gray-300 text-black hover:border-black'}`}
                       >
-                        <span className={b2bFrequency === 'weekly' ? "text-yellow-300" : "text-amber-600"}>★ Weekly Plan</span>
-                        <span className="text-[9px] opacity-75 font-normal">Recurring deliveries</span>
+                        <span className={b2bFrequency === 'weekly' ? "text-yellow-300" : "text-amber-600"}>★ Plano Semanal</span>
+                        <span className="text-[9px] opacity-75 font-normal">Pedidos recorrentes</span>
                       </button>
                     </div>
                   </div>
 
-                  {/* Delivery Calendar (Data de entrega) */}
+                  {/* Delivery Calendar */}
                   <div className="space-y-1">
                     <label className="text-[10px] font-extrabold uppercase tracking-wider text-black flex items-center gap-1.5">
                       <Calendar size={12} className="text-[#865d39]" /> 
-                      Scheduled Delivery Date (Calendar) *
+                      Data Agendada (Calendário) *
                     </label>
-                    <input 
-                      type="date" 
-                      className="w-full p-3 rounded-xl border border-gray-300 bg-white text-xs outline-none text-black font-extrabold text-black active:border-black select-all"
-                      style={{ color: '#000000' }}
+                    <BRDatePicker
+                      outputFormat="iso"
+                      placeholder="DD/MM/AAAA"
+                      primaryColor={settings.primaryColor}
                       value={b2bDate}
-                      onChange={e => setB2bDate(e.target.value)}
+                      onChange={val => setB2bDate(val)}
                     />
                   </div>
 
                   {/* Quantity section */}
                   <div className="pt-2">
                     <label className="text-[10px] font-extrabold uppercase tracking-widest text-[#865d39] block mb-3 border-b border-[#865d39]/20 pb-1">
-                      📦 FROZEN CHEESE BREAD PACKAGES VOLUME (1KG / 2.2LBS PACKAGES)
+                      📦 VOLUME DE PACOTES CONGELADOS (PACOTES 1KG / 2.2LBS)
                     </label>
                     
                     <div className="space-y-3">
                       {/* Item 1 */}
                       <div className="bg-white/70 p-3 rounded-2xl border border-white/30 flex items-center justify-between shadow-sm hover:shadow transition-shadow">
                         <div>
-                          <h4 className="font-extrabold text-xs text-black">Cocktail Size Cheese Bread</h4>
-                          <p className="text-[10px] text-gray-500 font-semibold">1kg packet • bite-sized, ideal for cafes & catering</p>
+                          <h4 className="font-extrabold text-xs text-black">Pão de Queijo Coquetel</h4>
+                          <p className="text-[10px] text-gray-500 font-semibold">Pacote 1kg • ideal para cafés e eventos</p>
                         </div>
                         <div className="flex items-center gap-3">
                           <button 
@@ -6950,8 +6628,8 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       {/* Item 2 */}
                       <div className="bg-white/70 p-3 rounded-2xl border border-white/30 flex items-center justify-between shadow-sm hover:shadow transition-shadow">
                         <div>
-                          <h4 className="font-extrabold text-xs text-black">Medium Size Cheese Bread</h4>
-                          <p className="text-[10px] text-gray-500 font-semibold">1kg packet • traditional classic café snack sizing</p>
+                          <h4 className="font-extrabold text-xs text-black">Pão de Queijo Médio</h4>
+                          <p className="text-[10px] text-gray-500 font-semibold">Pacote 1kg • tamanho clássico tradicional</p>
                         </div>
                         <div className="flex items-center gap-3">
                           <button 
@@ -6976,8 +6654,8 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       {/* Item 3 */}
                       <div className="bg-white/70 p-3 rounded-2xl border border-white/30 flex items-center justify-between shadow-sm hover:shadow transition-shadow">
                         <div>
-                          <h4 className="font-extrabold text-xs text-black">Large Premium Cheese Bread</h4>
-                          <p className="text-[10px] text-gray-500 font-semibold">1kg packet • gourmet display-counter large size</p>
+                          <h4 className="font-extrabold text-xs text-black">Pão de Queijo Grande Premium</h4>
+                          <p className="text-[10px] text-gray-500 font-semibold">Pacote 1kg • tamanho grande gourmet</p>
                         </div>
                         <div className="flex items-center gap-3">
                           <button 
@@ -7003,9 +6681,9 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
 
                   {/* Observation box */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-extrabold uppercase tracking-wider text-black">Custom Notes / Route Details</label>
+                    <label className="text-[10px] font-extrabold uppercase tracking-wider text-black">Observações / Detalhes</label>
                     <textarea 
-                      placeholder="Enter details on delivery access, loading dock, recurring schedulings or special B2B requests"
+                      placeholder="Informe detalhes de acesso, horários recorrentes ou pedidos especiais B2B"
                       rows={2.5}
                       className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-xs outline-none text-black font-semibold resize-none"
                       value={b2bObservation}
@@ -7017,7 +6695,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                 {/* Submission Options (Whats Only) */}
                 <div className="pt-4 border-t border-gray-200/50 space-y-3">
                   <div className="text-[10px] font-extrabold text-center text-gray-500 uppercase tracking-widest">
-                    Send Wholesale / Special Quote Request:
+                    Enviar Solicitação de Orçamento / Atacado:
                   </div>
                   
                   <div className="w-full">
@@ -7026,24 +6704,24 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                       onClick={() => {
                         // Submit via WhatsApp
                         if (!b2bName.trim() || !b2bResponsibleName.trim() || !b2bPhone.trim() || !b2bAddress.trim() || !b2bDate) {
-                           toast.error('Please complete all fields with an asterisk (*).');
+                           toast.error('Por favor, preencha todos os campos com asterisco (*).');
                            return;
                         }
                         if (pqCoquetel === 0 && pqMedio === 0 && pqPremium === 0) {
-                           toast.error('Select at least one package size quantity.');
+                           toast.error('Selecione pelo menos uma quantidade de pacote.');
                            return;
                         }
                         
                         // Construct state map and trigger submitting method
                         const formattedDateForDb = (() => {
                           const [year, month, day] = b2bDate.split('-');
-                          return `${month}/${day}/${year}`;
+                          return `${day}/${month}/${year}`;
                         })();
 
                         const orderItems = [];
-                        if (pqCoquetel > 0) orderItems.push({ title: 'Cocktail Frozen Cheese Bread (1kg package)', quantity: pqCoquetel, price: 0, priceType: 'consult' as const });
-                        if (pqMedio > 0) orderItems.push({ title: 'Medium Frozen Cheese Bread (1kg package)', quantity: pqMedio, price: 0, priceType: 'consult' as const });
-                        if (pqPremium > 0) orderItems.push({ title: 'Large Premium Frozen Cheese Bread (1kg package)', quantity: pqPremium, price: 0, priceType: 'consult' as const });
+                        if (pqCoquetel > 0) orderItems.push({ title: 'Pão de Queijo Coquetel Congelado (pacote 1kg)', quantity: pqCoquetel, price: 0, priceType: 'consult' as const });
+                        if (pqMedio > 0) orderItems.push({ title: 'Pão de Queijo Médio Congelado (pacote 1kg)', quantity: pqMedio, price: 0, priceType: 'consult' as const });
+                        if (pqPremium > 0) orderItems.push({ title: 'Pão de Queijo Grande Premium Congelado (pacote 1kg)', quantity: pqPremium, price: 0, priceType: 'consult' as const });
 
                         const b2bOrderDataObj = {
                           customerName: b2bName,
@@ -7056,7 +6734,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           items: orderItems,
                           total: 0,
                           createdAt: serverTimestamp(),
-                          orderLanguage: 'en',
+                          orderLanguage: 'pt',
                           isB2B: true,
                           isPJ: true,
                           b2bManagerName: b2bResponsibleName,
@@ -7076,26 +6754,26 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           setIsReturningB2b(true);
 
                           // Build message
-                          let msg = `*B2B CORPORATE ORDER & QUOTATION*\n`;
+                          let msg = `*PEDIDO & ORÇAMENTO CORPORATIVO (B2B)*\n`;
                           msg += `----------------------------------------\n`;
-                          msg += `*Company:* ${b2bName}\n`;
-                          msg += `*Manager:* ${b2bResponsibleName}\n`;
-                          msg += `*Phone:* ${b2bPhone}\n`;
-                          msg += `*Address:* ${b2bAddress}\n`;
-                          msg += `*Frequency:* ${b2bFrequency === 'weekly' ? 'Weekly Recurring Plan' : 'One-Time Delivery Order'}\n`;
-                          msg += `*Delivery Date:* ${formattedDateForDb}\n\n`;
-                          msg += `*Wholesale items requested:*\n`;
-                          if (pqCoquetel > 0) msg += `- Cocktail Frozen Cheese Bread: ${pqCoquetel} package(s) (1kg / 2.2lbs)\n`;
-                          if (pqMedio > 0) msg += `- Medium Frozen Cheese Bread: ${pqMedio} package(s) (1kg / 2.2lbs)\n`;
-                          if (pqPremium > 0) msg += `- Large Premium Frozen Cheese Bread: ${pqPremium} package(s) (1kg / 2.2lbs)\n`;
-                          if (b2bObservation) msg += `\n*Notes/Specs:* ${b2bObservation}\n`;
+                          msg += `*Empresa:* ${b2bName}\n`;
+                          msg += `*Responsável:* ${b2bResponsibleName}\n`;
+                          msg += `*Telefone:* ${b2bPhone}\n`;
+                          msg += `*Endereço:* ${b2bAddress}\n`;
+                          msg += `*Frequência:* ${b2bFrequency === 'weekly' ? 'Plano Recorrente Semanal' : 'Pedido Único'}\n`;
+                          msg += `*Data:* ${formattedDateForDb}\n\n`;
+                          msg += `*Itens solicitados:*\n`;
+                          if (pqCoquetel > 0) msg += `- Pão de Queijo Coquetel: ${pqCoquetel} pacote(s) (1kg / 2.2lbs)\n`;
+                          if (pqMedio > 0) msg += `- Pão de Queijo Médio: ${pqMedio} pacote(s) (1kg / 2.2lbs)\n`;
+                          if (pqPremium > 0) msg += `- Pão de Queijo Grande Premium: ${pqPremium} pacote(s) (1kg / 2.2lbs)\n`;
+                          if (b2bObservation) msg += `\n*Observações:* ${b2bObservation}\n`;
                           msg += `----------------------------------------\n`;
-                          msg += `Hello! We would like to request B2B wholesale pricing and delivery scheduling. Thank you!`;
+                          msg += `Olá! Gostaríamos de solicitar orçamento e agendamento para pedido no atacado. Obrigado!`;
 
                           const cleanPhone = getCleanWhatsAppPhone(settings.whatsappNumber || '', settings.whatsappCountryCode || '+1');
                           const sendUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
                           
-                          toast.success('B2B Quote recorded! Redirecting to WhatsApp...');
+                          toast.success('Orçamento B2B registrado! Redirecionando para o WhatsApp...');
                           setIsDietsModalOpen(false);
 
                           try {
@@ -7108,7 +6786,7 @@ export default function Menu({ settings: initialSettings }: { settings: Settings
                           }
                         } catch (err) {
                           console.error(err);
-                          toast.error('Error recording order.');
+                          toast.error('Erro ao registrar pedido.');
                         }
                       }}
                       className="w-full py-4 px-4 rounded-xl font-bold text-sm tracking-wider uppercase text-white bg-green-600 hover:bg-green-700 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md border-0"
