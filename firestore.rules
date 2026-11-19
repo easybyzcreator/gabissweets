@@ -79,5 +79,18 @@ service cloud.firestore {
       allow read: if true;
       allow write: if request.auth != null || true;
     }
+
+    // --- COLEÇÃO: ingredientes_precificacao ---
+    // Ingredientes e embalagens cadastrados na aba de Precificação.
+    match /ingredientes_precificacao/{ingredienteId} {
+      allow read, write: if request.auth != null || true;
+    }
+
+    // --- COLEÇÃO: receitas_precificacao ---
+    // Receitas e preços calculados salvos na aba de Precificação.
+    match /receitas_precificacao/{receitaId} {
+      allow read, write: if request.auth != null || true;
+    }
   }
 }
+

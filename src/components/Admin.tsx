@@ -14,7 +14,8 @@ import {
   DollarSign, Coins, ChevronDown, ChevronUp, Users, Download, Truck, Search, Info, Table,
   ChevronLeft, ChevronRight, Clock, LayoutGrid, CalendarDays, Check, ShoppingBag, User, Mail, MapPin, FileText,
   ExternalLink, Utensils, RefreshCw, HelpCircle, Leaf, Code, ToggleLeft, ToggleRight, GraduationCap,
-  BookOpen
+  BookOpen,
+  Calculator
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn, cleanFirestoreData } from '../lib/utils';
@@ -22,6 +23,7 @@ import { toast } from 'sonner';
 import Footer from './Footer';
 import BRDatePicker from './BRDatePicker';
 import AdminSupplies from './AdminSupplies';
+import AdminPricing from './AdminPricing';
 import { SendInstructionToCustomerModal } from './SendInstructionToCustomerModal';
 import { initialProducts, initialCategories } from '../data/defaultCatalog';
 import { ensureDefaultCatalogSeeded, markCategoryAsDeleted, markProductAsDeleted } from '../lib/catalogInit';
@@ -281,7 +283,7 @@ export default function Admin({ settings, setSettings, setIsAdmin }: {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [password, setPassword] = useState('');
   const [galleryIdToDelete, setGalleryIdToDelete] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'settings' | 'menu' | 'orderMenu' | 'orders' | 'categories' | 'sides' | 'customers' | 'cakeOptions' | 'galleries' | 'finance' | 'supplies'>('orders');
+  const [activeTab, setActiveTab] = useState<'settings' | 'menu' | 'orderMenu' | 'orders' | 'categories' | 'sides' | 'customers' | 'cakeOptions' | 'galleries' | 'finance' | 'supplies' | 'pricing'>('orders');
   const [selectedOrderCategoryId, setSelectedOrderCategoryId] = useState<string>('');
   const [galleries, setGalleries] = useState<ImageGallery[]>([]);
   const [draggedGallerySlot, setDraggedGallerySlot] = useState<{ galleryId: string; index: number } | null>(null);
@@ -4387,6 +4389,17 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
           </button>
 
           <button 
+            onClick={() => setActiveTab('pricing')}
+            className={cn(
+              "flex items-center gap-3 p-3 rounded-xl transition-all font-semibold",
+              activeTab === 'pricing' ? "shadow-lg font-bold" : "hover:bg-white/30 text-black"
+            )}
+            style={activeTab === 'pricing' ? { backgroundColor: settings?.primaryColor || '#865d39', color: getContrastText(settings?.primaryColor || '#865d39') } : {}}
+          >
+            <Calculator size={20} /> Precificação
+          </button>
+
+          <button 
             onClick={() => setActiveTab('finance')}
             className={cn(
               "flex items-center gap-3 p-3 rounded-xl transition-all font-semibold",
@@ -4424,6 +4437,10 @@ TOTAL: ${currencySymbol} ${orderTotalStr}
       <main id="admin-main-content" className="flex-grow p-4 md:p-10 overflow-y-auto min-w-0 w-full">
         {activeTab === 'supplies' && (
           <AdminSupplies settings={settings} />
+        )}
+
+        {activeTab === 'pricing' && (
+          <AdminPricing settings={settings} />
         )}
 
         {activeTab === 'finance' && (

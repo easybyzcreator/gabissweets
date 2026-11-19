@@ -344,3 +344,47 @@ export interface SupplyItem {
   createdAt?: string;
 }
 
+export type PricingUnit = 'g' | 'kg' | 'ml' | 'l' | 'un';
+
+export type PricingPaymentMethod = 'none' | 'debit' | 'credit' | 'paypal';
+
+export interface PricingIngredient {
+  id: string;
+  name: string;
+  unit: PricingUnit;
+  packageQuantity: number;
+  packagePrice: number;
+  notes?: string;
+  createdAt?: any;
+  updatedAt?: any;
+}
+
+export interface PricingRecipeIngredient {
+  ingredientId: string;
+  ingredientName: string;
+  quantityUsed: number;
+  unitUsed: PricingUnit;
+}
+
+export interface PricingRecipe {
+  id: string;
+  name: string;
+  category?: string;
+  yieldQuantity: number;
+  yieldLabel?: string;
+  ingredients: PricingRecipeIngredient[];
+  kitchenOverheadPercent: number;
+  laborCost: number;
+  profitPercent: number;
+  paymentMethod: PricingPaymentMethod;
+  paymentFeePercent: number;
+  ingredientsCost?: number;
+  totalRecipeCost?: number;
+  unitCost?: number;
+  suggestedUnitPrice?: number;
+  suggestedRecipePrice?: number;
+  expectedProfitUnit?: number;
+  expectedProfitRecipe?: number;
+  createdAt?: any;
+  updatedAt?: any;
+}

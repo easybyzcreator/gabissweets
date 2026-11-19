@@ -70,6 +70,29 @@
         "imageUrl": { "type": "string" },
         "purchaseUrl": { "type": "string" }
       }
+    },
+    "PricingIngredient": {
+      "title": "PricingIngredient",
+      "description": "Ingredientes e embalagens com custo por embalagem para precificação.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "unit": { "type": "string" },
+        "packageQuantity": { "type": "number" },
+        "packagePrice": { "type": "number" }
+      }
+    },
+    "PricingRecipe": {
+      "title": "PricingRecipe",
+      "description": "Receitas precificadas com rendimento, margem e taxas de pagamento.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "yieldQuantity": { "type": "number" },
+        "suggestedUnitPrice": { "type": "number" },
+        "suggestedRecipePrice": { "type": "number" }
+      }
     }
   },
   "firestore": {
@@ -96,6 +119,15 @@
     "/insumos/{insumoId}": {
       "schema": "Supply",
       "description": "Insumos e equipamentos recomendados cadastrados no painel"
+    },
+    "/ingredientes_precificacao/{ingredienteId}": {
+      "schema": "PricingIngredient",
+      "description": "Ingredientes e embalagens utilizados no cálculo de precificação"
+    },
+    "/receitas_precificacao/{receitaId}": {
+      "schema": "PricingRecipe",
+      "description": "Receitas e preços finais salvos na aba de Precificação"
     }
   }
 }
+
